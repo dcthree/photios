@@ -16,7 +16,7 @@
     cts_endpoint: 'http://www.perseus.tufts.edu/hopper/CTS',
     cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1',
     cite_table_id: '11_Igu6u5961Dkz-cfbJOgKdYkQMwnoe3AQXw8T-K',
-    cite_collection_editor_url: 'http://localhost:4001/'
+    cite_collection_editor_url: 'http://localhost:4001/src/index.html'
   };
 
   google_oauth_parameters_for_fusion_tables = {
@@ -54,12 +54,20 @@
             return console.log("AJAX Error: " + textStatus);
           },
           success: function(data) {
-            var entry, request_urn, tei_document, urn_selector;
+            var editor_href, editor_link, entry, request_urn, tei_document, urn_selector;
             console.log(data);
             tei_document = $($($(data)[0]).children('TEI')[0]);
             request_urn = tei_document.find('requestUrn').text();
             entry = tei_document.find('div[type="entry"]');
             urn_selector = "li#" + (urn_to_id(request_urn));
+            $(urn_selector).text('');
+            editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param({
+              'URN-commentedOn': request_urn,
+              Text: encodeURIComponent($(entry).find('p').text())
+            });
+            console.log(editor_href);
+            editor_link = $('<a>').attr('target', '_blank').attr('href', editor_href).text(request_urn);
+            $(urn_selector).append(editor_link);
             return $(urn_selector).append(entry);
           }
         }));
