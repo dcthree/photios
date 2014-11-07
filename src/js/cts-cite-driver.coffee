@@ -1,5 +1,9 @@
 FUSION_TABLES_URI = 'https://www.googleapis.com/fusiontables/v1'
 
+cts_cite_collection_driver_config = {}
+valid_urns = []
+cite_collection = {}
+
 default_cts_cite_collection_driver_config =
   google_client_id: '429515988667-jkk0s2375vu04vasnvpotbimddag4ih8.apps.googleusercontent.com'
   google_scope: 'https://www.googleapis.com/auth/fusiontables https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
@@ -15,14 +19,49 @@ google_oauth_parameters_for_fusion_tables =
 google_oauth_url = ->
   "https://accounts.google.com/o/oauth2/auth?#{$.param(google_oauth_parameters_for_fusion_tables)}"
 
+build_cts_ui = ->
+  $('body').append $('<ul id="valid_urns">')
+  for urn in valid_urns
+    urn_li = $('<li>').attr('id',urn.replace(/[:.-]/g,'_')).text(urn)
+    $('#valid_urns').append urn_li
+
+    if urn == 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1:a.habaris'
+      request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
+        request: 'GetPassage'
+        urn: urn
+      )}"
+      $.ajax request_url,
+        type: 'GET'
+        dataType: 'xml'
+        crossDomain: 'true'
+        error: (jqXHR, textStatus, errorThrown) ->
+          console.log "AJAX Error: #{textStatus}"
+        success: (data) ->
+          console.log(data)
+          tei_document = $($($(data)[0]).children('TEI')[0])
+          request_urn = tei_document.find('requestUrn').text()
+          entry = tei_document.find('div[type="entry"]')
+          urn_selector = "li##{request_urn.replace(/[:.-]/g,'_')}"
+          console.log urn_selector
+          console.log $(urn_selector)
+          $(urn_selector).append(entry)
+          console.log $($('li')[0])
+
+# get all data from fusion table
+get_cite_collection = (callback) ->
+  console.log('get_cite_collection')
+  fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
+    cite_collection = fusion_tables_result
+    callback() if callback?
+
 get_valid_reff_xml_to_urn_list = (xml) ->
   leaf_nodes = $(xml).find('chunk').filter (index) -> (($(this).children('chunk').length) == 0)
-  "#{default_cts_cite_collection_driver_config['cts_urn']}:#{$(chunk).parents('chunk').map((index) -> $(this).attr('n')).toArray().join('.')}.#{$(chunk).attr('n')}" for chunk in leaf_nodes
+  "#{cts_cite_collection_driver_config['cts_urn']}:#{$(chunk).parents('chunk').map((index) -> $(this).attr('n')).toArray().join('.')}.#{$(chunk).attr('n')}" for chunk in leaf_nodes
 
 # construct a list of valid URN's and pass to callback function
 get_valid_reff = (urn, callback = null) ->
   console.log('get_valid_reff')
-  request_url = "#{default_cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
+  request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
     request: 'GetValidReff'
     urn: urn
   )}"
@@ -36,9 +75,8 @@ get_valid_reff = (urn, callback = null) ->
     success: (data) ->
       console.log(data)
       valid_urns = get_valid_reff_xml_to_urn_list($($(data)[0]).children('contents')[0])
-      console.log valid_urns
-      if callback?
-        callback(valid_urns)
+      console.log valid_urns.length
+      callback() if callback?
 
 check_table_access = (table_id, callback) ->
   # test table access
@@ -196,7 +234,7 @@ build_cts_cite_driver = ->
   console.log('build')
   if get_cookie 'access_token'
     set_cookie_expiration_callback()
-    get_valid_reff(default_cts_cite_collection_driver_config['cts_urn'])
+    get_valid_reff(cts_cite_collection_driver_config['cts_urn'], => get_cite_collection(build_cts_ui))
   else
     window.location = google_oauth_url()
 
