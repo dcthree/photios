@@ -10,6 +10,7 @@ default_cts_cite_collection_driver_config =
   cts_endpoint: 'http://www.perseus.tufts.edu/hopper/CTS'
   cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1'
   cite_table_id: '11_Igu6u5961Dkz-cfbJOgKdYkQMwnoe3AQXw8T-K'
+  cite_collection_editor_url: 'http://localhost:4001/'
 
 google_oauth_parameters_for_fusion_tables =
   response_type: 'token'
@@ -19,10 +20,13 @@ google_oauth_parameters_for_fusion_tables =
 google_oauth_url = ->
   "https://accounts.google.com/o/oauth2/auth?#{$.param(google_oauth_parameters_for_fusion_tables)}"
 
+urn_to_id = (urn) ->
+  urn.replace(/[:.-]/g,'_')
+
 build_cts_ui = ->
   $('body').append $('<ul id="valid_urns">')
   for urn in valid_urns
-    urn_li = $('<li>').attr('id',urn.replace(/[:.-]/g,'_')).text(urn)
+    urn_li = $('<li>').attr('id',urn_to_id(urn)).text(urn)
     $('#valid_urns').append urn_li
 
     if urn == 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1:a.habaris'
@@ -41,11 +45,8 @@ build_cts_ui = ->
           tei_document = $($($(data)[0]).children('TEI')[0])
           request_urn = tei_document.find('requestUrn').text()
           entry = tei_document.find('div[type="entry"]')
-          urn_selector = "li##{request_urn.replace(/[:.-]/g,'_')}"
-          console.log urn_selector
-          console.log $(urn_selector)
+          urn_selector = "li##{urn_to_id(request_urn)}"
           $(urn_selector).append(entry)
-          console.log $($('li')[0])
 
 # get all data from fusion table
 get_cite_collection = (callback) ->
