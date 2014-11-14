@@ -58,7 +58,6 @@ get_passage = (urn) ->
     error: (jqXHR, textStatus, errorThrown) ->
       console.log "AJAX Error: #{textStatus}"
     success: (data) ->
-      console.log(data)
       tei_document = $($($(data)[0]).children('TEI')[0])
       request_urn = tei_document.find('requestUrn').text()
       entry = tei_document.find('div[type="entry"]')

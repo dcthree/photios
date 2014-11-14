@@ -84,7 +84,6 @@
       },
       success: function(data) {
         var body, entry, head, request_urn, tei_document;
-        console.log(data);
         tei_document = $($($(data)[0]).children('TEI')[0]);
         request_urn = tei_document.find('requestUrn').text();
         entry = tei_document.find('div[type="entry"]');
