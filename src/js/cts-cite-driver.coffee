@@ -23,6 +23,13 @@ google_oauth_url = ->
 urn_to_id = (urn) ->
   urn.replace(/[:.-]/g,'_')
 
+cite_collection_contains_urn = (urn) ->
+  if cite_collection.rows?
+    matching_rows = cite_collection.rows.filter (row) -> row[1] == urn
+    if matching_rows.length > 0
+      return true
+  return false
+
 set_cts_text = (urn, head, body) ->
   localStorage["#{urn}[head]"] ?= head
   localStorage["#{urn}[body]"] ?= body
@@ -32,9 +39,10 @@ set_cts_text = (urn, head, body) ->
     'URN-commentedOn': urn
     Text: encodeURIComponent(body)
   )
-  console.log editor_href
   editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(urn)
   $(urn_selector).append(editor_link)
+  if cite_collection_contains_urn(urn)
+    $(urn_selector).append ' \u2713'
   $(urn_selector).append $('<head>').text(head)
   $(urn_selector).append $('<p>').text(body)
 
