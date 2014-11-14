@@ -23,17 +23,20 @@ google_oauth_url = ->
 urn_to_id = (urn) ->
   urn.replace(/[:.-]/g,'_')
 
-set_cts_text = (urn, entry) ->
+set_cts_text = (urn, head, body) ->
+  localStorage["#{urn}[head]"] ?= head
+  localStorage["#{urn}[body]"] ?= body
   urn_selector = "li##{urn_to_id(urn)}"
   $(urn_selector).text('')
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN-commentedOn': urn
-    Text: encodeURIComponent($(entry).find('p').text())
+    Text: encodeURIComponent(body)
   )
   console.log editor_href
   editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(urn)
   $(urn_selector).append(editor_link)
-  $(urn_selector).append(entry)
+  $(urn_selector).append $('<head>').text(head)
+  $(urn_selector).append $('<p>').text(body)
 
 get_passage = (urn) ->
   request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
@@ -51,7 +54,9 @@ get_passage = (urn) ->
       tei_document = $($($(data)[0]).children('TEI')[0])
       request_urn = tei_document.find('requestUrn').text()
       entry = tei_document.find('div[type="entry"]')
-      set_cts_text(request_urn, entry)
+      head = $(entry).find('head').text()
+      body = $(entry).find('p').text()
+      set_cts_text(request_urn, head, body)
 
 build_cts_ui = ->
   $('body').append $('<ul id="valid_urns">')
@@ -59,7 +64,9 @@ build_cts_ui = ->
     urn_li = $('<li>').attr('id',urn_to_id(urn)).text(urn)
     $('#valid_urns').append urn_li
 
-    if urn == 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1:a.habaris'
+    if localStorage["#{urn}[head]"]?
+      set_cts_text(urn, localStorage["#{urn}[head]"], localStorage["#{urn}[body]"])
+    else
       get_passage(urn)
 
 # get all data from fusion table

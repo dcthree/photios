@@ -33,18 +33,25 @@
     return urn.replace(/[:.-]/g, '_');
   };
 
-  set_cts_text = function(urn, entry) {
-    var editor_href, editor_link, urn_selector;
+  set_cts_text = function(urn, head, body) {
+    var editor_href, editor_link, urn_selector, _name, _name1;
+    if (localStorage[_name = "" + urn + "[head]"] == null) {
+      localStorage[_name] = head;
+    }
+    if (localStorage[_name1 = "" + urn + "[body]"] == null) {
+      localStorage[_name1] = body;
+    }
     urn_selector = "li#" + (urn_to_id(urn));
     $(urn_selector).text('');
     editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param({
       'URN-commentedOn': urn,
-      Text: encodeURIComponent($(entry).find('p').text())
+      Text: encodeURIComponent(body)
     });
     console.log(editor_href);
     editor_link = $('<a>').attr('target', '_blank').attr('href', editor_href).text(urn);
     $(urn_selector).append(editor_link);
-    return $(urn_selector).append(entry);
+    $(urn_selector).append($('<head>').text(head));
+    return $(urn_selector).append($('<p>').text(body));
   };
 
   get_passage = function(urn) {
@@ -61,12 +68,14 @@
         return console.log("AJAX Error: " + textStatus);
       },
       success: function(data) {
-        var entry, request_urn, tei_document;
+        var body, entry, head, request_urn, tei_document;
         console.log(data);
         tei_document = $($($(data)[0]).children('TEI')[0]);
         request_urn = tei_document.find('requestUrn').text();
         entry = tei_document.find('div[type="entry"]');
-        return set_cts_text(request_urn, entry);
+        head = $(entry).find('head').text();
+        body = $(entry).find('p').text();
+        return set_cts_text(request_urn, head, body);
       }
     });
   };
@@ -79,10 +88,10 @@
       urn = valid_urns[_i];
       urn_li = $('<li>').attr('id', urn_to_id(urn)).text(urn);
       $('#valid_urns').append(urn_li);
-      if (urn === 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1:a.habaris') {
-        _results.push(get_passage(urn));
+      if (localStorage["" + urn + "[head]"] != null) {
+        _results.push(set_cts_text(urn, localStorage["" + urn + "[head]"], localStorage["" + urn + "[body]"]));
       } else {
-        _results.push(void 0);
+        _results.push(get_passage(urn));
       }
     }
     return _results;
