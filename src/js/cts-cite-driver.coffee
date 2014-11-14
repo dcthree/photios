@@ -10,7 +10,7 @@ default_cts_cite_collection_driver_config =
   cts_endpoint: 'http://www.perseus.tufts.edu/hopper/CTS'
   cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1'
   cite_table_id: '11_Igu6u5961Dkz-cfbJOgKdYkQMwnoe3AQXw8T-K'
-  cite_collection_editor_url: 'http://localhost:4001/src/index.html'
+  cite_collection_editor_url: 'http://ryanfb.github.io/harpocration/src/index.html'
 
 google_oauth_parameters_for_fusion_tables =
   response_type: 'token'
