@@ -37,7 +37,7 @@ set_cts_text = (urn, head, body) ->
   $(urn_selector).text('')
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN-commentedOn': urn
-    Text: encodeURIComponent(body)
+    Text: encodeURIComponent("#{head}: #{body}")
   )
   editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(urn)
   $(urn_selector).append(editor_link)
