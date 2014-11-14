@@ -23,6 +23,36 @@ google_oauth_url = ->
 urn_to_id = (urn) ->
   urn.replace(/[:.-]/g,'_')
 
+set_cts_text = (urn, entry) ->
+  urn_selector = "li##{urn_to_id(urn)}"
+  $(urn_selector).text('')
+  editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
+    'URN-commentedOn': urn
+    Text: encodeURIComponent($(entry).find('p').text())
+  )
+  console.log editor_href
+  editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(urn)
+  $(urn_selector).append(editor_link)
+  $(urn_selector).append(entry)
+
+get_passage = (urn) ->
+  request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
+    request: 'GetPassage'
+    urn: urn
+  )}"
+  $.ajax request_url,
+    type: 'GET'
+    dataType: 'xml'
+    crossDomain: 'true'
+    error: (jqXHR, textStatus, errorThrown) ->
+      console.log "AJAX Error: #{textStatus}"
+    success: (data) ->
+      console.log(data)
+      tei_document = $($($(data)[0]).children('TEI')[0])
+      request_urn = tei_document.find('requestUrn').text()
+      entry = tei_document.find('div[type="entry"]')
+      set_cts_text(request_urn, entry)
+
 build_cts_ui = ->
   $('body').append $('<ul id="valid_urns">')
   for urn in valid_urns
@@ -30,31 +60,7 @@ build_cts_ui = ->
     $('#valid_urns').append urn_li
 
     if urn == 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1:a.habaris'
-      request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
-        request: 'GetPassage'
-        urn: urn
-      )}"
-      $.ajax request_url,
-        type: 'GET'
-        dataType: 'xml'
-        crossDomain: 'true'
-        error: (jqXHR, textStatus, errorThrown) ->
-          console.log "AJAX Error: #{textStatus}"
-        success: (data) ->
-          console.log(data)
-          tei_document = $($($(data)[0]).children('TEI')[0])
-          request_urn = tei_document.find('requestUrn').text()
-          entry = tei_document.find('div[type="entry"]')
-          urn_selector = "li##{urn_to_id(request_urn)}"
-          $(urn_selector).text('')
-          editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
-            'URN-commentedOn': request_urn
-            Text: encodeURIComponent($(entry).find('p').text())
-          )
-          console.log editor_href
-          editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(request_urn)
-          $(urn_selector).append(editor_link)
-          $(urn_selector).append(entry)
+      get_passage(urn)
 
 # get all data from fusion table
 get_cite_collection = (callback) ->
