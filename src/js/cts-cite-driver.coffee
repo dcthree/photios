@@ -102,11 +102,19 @@ show_translated = ->
   $('li:not(.has_translation)').hide()
   $('.has_translation').show()
 
+cite_collection_contains_urn = (urn) ->
+  if cite_collection.rows?
+    matching_rows = cite_collection.rows.filter (row) -> row[1] == urn
+    if matching_rows.length > 0
+      return true
+  return false
+
 build_cts_ui = ->
   $('#all_entries_button').click(show_all)
   $('#translated_button').click(show_translated)
   $('#untranslated_button').click(show_untranslated)
   $('#translation_container').append $('<ul>').attr('id','valid_urns')
+  translated_urns = 0
   for urn in valid_urns
     urn_li = $('<li>').attr('id',urn_to_id(urn)).text(urn)
     $('#valid_urns').append urn_li
@@ -115,6 +123,13 @@ build_cts_ui = ->
       set_cts_text(urn, localStorage["#{urn}[head]"], localStorage["#{urn}[body]"])
     else
       get_passage(urn)
+    
+    if cite_collection_contains_urn(urn)
+      translated_urns += 1
+
+  progress = translated_urns/valid_urns.length * 100.0; 
+  console.log("Progress: #{progress}")
+  $('#translation_progress').attr('style',"width: #{progress}%;")
 
 # get all data from fusion table
 get_cite_collection = (callback) ->

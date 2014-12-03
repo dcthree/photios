@@ -23,13 +23,17 @@
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
       <div class="container">
         <div id="navbar" class="navbar-collapse collapse">
-        <form class="navbar-form form-inline">
-          <div id="toggle_group" class="btn-group" role="group" aria-label="Entry Toggle">
-            <button id="all_entries_button" type="button" class="btn btn-default active">All Entries</button>
-            <button id="untranslated_button" type="button" class="btn btn-default">Untranslated</button>
-            <button id="translated_button" type="button" class="btn btn-default">Translated</button>
-          </div>
-        </form>
+          <form class="navbar-form form-inline">
+            <div id="toggle_group" class="btn-group" role="group" aria-label="Entry Toggle">
+              <button id="all_entries_button" type="button" class="btn btn-default active">All Entries</button>
+              <button id="untranslated_button" type="button" class="btn btn-default">Untranslated</button>
+              <button id="translated_button" type="button" class="btn btn-default">Translated</button>
+            </div>
+            <div class="nav navbar-nav navbar-right progress" style="width: 300px; margin-top:5px; margin-right: 1em;">
+              <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 0%;" id="translation_progress">
+              </div>
+            </div>
+          </form>
         </div><!--/.nav-collapse -->
       </div>
     </nav>
