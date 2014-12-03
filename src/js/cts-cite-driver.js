@@ -54,7 +54,9 @@
         return row[1] === urn;
       });
       if (matching_rows.length > 0) {
+        $(urn_selector).addClass('has_translation');
         $(urn_selector).prepend(' \u2713');
+        $(urn_selector).append($('<br>'));
         $(urn_selector).append($('<p>').text('Translations:'));
         _results = [];
         for (_i = 0, _len = matching_rows.length; _i < _len; _i++) {

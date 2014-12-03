@@ -40,7 +40,9 @@ add_translations = (urn) ->
   if cite_collection.rows?
     matching_rows = cite_collection.rows.filter (row) -> row[1] == urn
     if matching_rows.length > 0
+      $(urn_selector).addClass('has_translation')
       $(urn_selector).prepend ' \u2713'
+      $(urn_selector).append $('<br>')
       $(urn_selector).append $('<p>').text('Translations:')
       for matching_row in matching_rows
         do (matching_row) ->
