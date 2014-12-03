@@ -23,12 +23,28 @@ google_oauth_url = ->
 urn_to_id = (urn) ->
   urn.replace(/[:.-]/g,'_')
 
-cite_collection_contains_urn = (urn) ->
+add_translation = (translation) ->
+  translation_div = $('<div>').attr('class','translation')
+  edit_translation_link = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
+    'URN': translation[0]
+  )
+  edit_translation_a = $('<a>').attr('href',edit_translation_link).text(translation[0])
+  translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
+  translation_div.append $('<span>').attr('class','author').text(translation[2])
+  # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
+  translation_div.append $('<span>').attr('class','translation_text').text(translation[5])
+  $("li##{urn_to_id(translation[1])}").append translation_div
+
+add_translations = (urn) ->
+  urn_selector = "li##{urn_to_id(urn)}"
   if cite_collection.rows?
     matching_rows = cite_collection.rows.filter (row) -> row[1] == urn
     if matching_rows.length > 0
-      return true
-  return false
+      $(urn_selector).prepend ' \u2713'
+      $(urn_selector).append $('<p>').text('Translations:')
+      for matching_row in matching_rows
+        do (matching_row) ->
+          add_translation(matching_row)
 
 set_cts_text = (urn, head, body) ->
   localStorage["#{urn}[head]"] ?= head
@@ -41,12 +57,11 @@ set_cts_text = (urn, head, body) ->
   )
   editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(urn)
   $(urn_selector).append(editor_link)
-  if cite_collection_contains_urn(urn)
-    $(urn_selector).append ' \u2713'
   source_text = $('<div>').attr('class','source_text')
   source_text.append $('<head>').text(head)
   source_text.append $('<p>').text(body)
   $(urn_selector).append source_text
+  add_translations(urn)
 
 get_passage = (urn) ->
   request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
