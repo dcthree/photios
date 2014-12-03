@@ -39,7 +39,7 @@
     edit_translation_link = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param({
       'URN': translation[0]
     });
-    edit_translation_a = $('<a>').attr('href', edit_translation_link).text(translation[0]);
+    edit_translation_a = $('<a>').attr('target', '_blank').attr('href', edit_translation_link).text(translation[0]);
     translation_div.append($('<span>').attr('class', 'urn').append(edit_translation_a));
     translation_div.append($('<span>').attr('class', 'author').text(translation[2]));
     translation_div.append($('<span>').attr('class', 'entry_text').text(translation[4]));
