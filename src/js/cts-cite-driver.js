@@ -47,7 +47,7 @@
   };
 
   set_cts_text = function(urn, head, body) {
-    var editor_href, editor_link, urn_selector, _name, _name1;
+    var editor_href, editor_link, source_text, urn_selector, _name, _name1;
     if (localStorage[_name = "" + urn + "[head]"] == null) {
       localStorage[_name] = head;
     }
@@ -65,8 +65,10 @@
     if (cite_collection_contains_urn(urn)) {
       $(urn_selector).append(' \u2713');
     }
-    $(urn_selector).append($('<head>').text(head));
-    return $(urn_selector).append($('<p>').text(body));
+    source_text = $('<div>').attr('class', 'source_text');
+    source_text.append($('<head>').text(head));
+    source_text.append($('<p>').text(body));
+    return $(urn_selector).append(source_text);
   };
 
   get_passage = function(urn) {

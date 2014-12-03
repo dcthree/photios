@@ -43,8 +43,10 @@ set_cts_text = (urn, head, body) ->
   $(urn_selector).append(editor_link)
   if cite_collection_contains_urn(urn)
     $(urn_selector).append ' \u2713'
-  $(urn_selector).append $('<head>').text(head)
-  $(urn_selector).append $('<p>').text(body)
+  source_text = $('<div>').attr('class','source_text')
+  source_text.append $('<head>').text(head)
+  source_text.append $('<p>').text(body)
+  $(urn_selector).append source_text
 
 get_passage = (urn) ->
   request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
