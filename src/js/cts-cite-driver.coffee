@@ -32,6 +32,7 @@ add_translation = (translation) ->
   translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
   translation_div.append $('<span>').attr('class','author').text(translation[2])
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
+  translation_div.append $('<span>').attr('class','entry_text').text(translation[4])
   translation_div.append $('<span>').attr('class','translation_text').text(translation[5])
   $("li##{urn_to_id(translation[1])}").append translation_div
 
@@ -41,7 +42,7 @@ add_translations = (urn) ->
     matching_rows = cite_collection.rows.filter (row) -> row[1] == urn
     if matching_rows.length > 0
       $(urn_selector).addClass('has_translation')
-      $(urn_selector).prepend ' \u2713'
+      # $(urn_selector).prepend ' \u2713'
       $(urn_selector).append $('<br>')
       $(urn_selector).append $('<p>').text('Translations:')
       for matching_row in matching_rows
@@ -84,8 +85,28 @@ get_passage = (urn) ->
       body = $(entry).find('p').text()
       set_cts_text(request_urn, head, body)
 
+show_all = ->
+  $('#toggle_group button').removeClass('active')
+  $('#all_entries_button').addClass('active')
+  $('li').show()
+
+show_untranslated = ->
+  $('#toggle_group button').removeClass('active')
+  $('#untranslated_button').addClass('active')
+  $('.has_translation').hide()
+  $('li:not(.has_translation)').show()
+
+show_translated = ->
+  $('#toggle_group button').removeClass('active')
+  $('#translated_button').addClass('active')
+  $('li:not(.has_translation)').hide()
+  $('.has_translation').show()
+
 build_cts_ui = ->
-  $('body').append $('<ul id="valid_urns">')
+  $('#all_entries_button').click(show_all)
+  $('#translated_button').click(show_translated)
+  $('#untranslated_button').click(show_untranslated)
+  $('#translation_container').append $('<ul>').attr('id','valid_urns')
   for urn in valid_urns
     urn_li = $('<li>').attr('id',urn_to_id(urn)).text(urn)
     $('#valid_urns').append urn_li
