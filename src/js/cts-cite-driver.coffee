@@ -47,17 +47,25 @@ add_translations = (urn) ->
         do (matching_row) ->
           add_translation(matching_row)
 
-set_cts_text = (urn, head, body) ->
+set_cts_text = (urn, head, body, perseus, sol) ->
   localStorage["#{urn}[head]"] ?= head
   localStorage["#{urn}[body]"] ?= body
+  localStorage["#{urn}[perseus]"] ?= perseus
+  localStorage["#{urn}[sol]"] ?= sol
   urn_selector = "li##{urn_to_id(urn)}"
   $(urn_selector).text('')
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN-commentedOn': urn
     'Text': encodeURIComponent("#{head}: #{body}")
   )
-  editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(urn)
+  editor_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',editor_href).text(urn))
   $(urn_selector).append(editor_link)
+  perseus_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',"http://data.perseus.org/citations/#{perseus}").text("Open #{perseus} in Perseus"))
+  $(urn_selector).append(perseus_link)
+  if sol?.length
+    [sol1, sol2] = sol.split(',')
+    sol_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',"http://www.stoa.org/sol-entries/#{sol1}/#{sol2}").text("Open Adler number #{sol1} #{sol2} in the Suda On Line"))
+    $(urn_selector).append(sol_link)
   source_text = $('<div>').attr('class','source_text')
   source_text.append $('<head>').text(head)
   source_text.append $('<p>').text(body)
@@ -69,13 +77,12 @@ get_passage = (urn) ->
   fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN = #{fusion_tables_escape(urn)}", (fusion_tables_result) ->
     # console.log fusion_tables_result
     passage = fusion_tables_result.rows[0]
-    # 0 = URN
-    # 1 = Perseus
-    # 2 = text
-    # 3 = SOL
     request_urn = passage[0]
+    perseus = passage[1]
+    text = passage[2]
+    sol = passage[3]
     head = urn_to_head(request_urn)
-    set_cts_text(request_urn, head, passage[2])
+    set_cts_text(request_urn, head, text, perseus, sol)
     
 show_all = ->
   $('#toggle_group button').removeClass('active')
@@ -112,7 +119,7 @@ build_cts_ui = ->
     $('#valid_urns').append urn_li
 
     if localStorage["#{urn}[head]"]?
-      set_cts_text(urn, localStorage["#{urn}[head]"], localStorage["#{urn}[body]"])
+      set_cts_text(urn, localStorage["#{urn}[head]"], localStorage["#{urn}[body]"], localStorage["#{urn}[perseus]"], localStorage["#{urn}[sol]"])
     else
       get_passage(urn)
     
