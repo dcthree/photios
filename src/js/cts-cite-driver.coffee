@@ -8,6 +8,7 @@ valid_urns = []
 cite_collection = {}
 
 default_cts_cite_collection_driver_config =
+  google_api_key: 'AIzaSyACO-ZANrYxHFG44v8kqsfGb6taylh2aDk'
   google_client_id: '429515988667-jkk0s2375vu04vasnvpotbimddag4ih8.apps.googleusercontent.com'
   google_scope: 'https://www.googleapis.com/auth/fusiontables https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
   cts_endpoint: '1_DFxPLkDrZt2JTgFo04nI6zQ9AsnnqMNRlUBb2Sq'
@@ -62,7 +63,7 @@ set_cts_text = (urn, head, body) ->
   $(urn_selector).text('')
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN-commentedOn': urn
-    Text: encodeURIComponent("#{head}: #{body}")
+    'Text': encodeURIComponent("#{head}: #{body}")
   )
   editor_link = $('<a>').attr('target','_blank').attr('href',editor_href).text(urn)
   $(urn_selector).append(editor_link)
@@ -178,7 +179,7 @@ fusion_tables_query = (query, callback) ->
   console.log "Query: #{query}"
   switch query.split(' ')[0]
     when 'INSERT'
-      $.ajax "#{FUSION_TABLES_URI}/query?access_token=#{get_cookie 'access_token'}",
+      $.ajax "#{FUSION_TABLES_URI}/query?key=#{cts_cite_collection_driver_config['google_api_key']}",
         type: 'POST'
         dataType: 'json'
         crossDomain: true
@@ -196,7 +197,7 @@ fusion_tables_query = (query, callback) ->
           if callback?
             callback(data)
     when 'SELECT'
-      $.ajax "#{FUSION_TABLES_URI}/query?sql=#{query}&access_token=#{get_cookie 'access_token'}",
+      $.ajax "#{FUSION_TABLES_URI}/query?sql=#{query}&key=#{cts_cite_collection_driver_config['google_api_key']}",
         type: 'GET'
         cache: false
         dataType: 'json'
@@ -308,18 +309,15 @@ set_cookie_expiration_callback = ->
 
 build_cts_cite_driver = ->
   console.log('build')
-  if get_cookie 'access_token'
-    set_cookie_expiration_callback()
-    get_valid_reff(cts_cite_collection_driver_config['cts_urn'], => get_cite_collection(build_cts_ui))
-  else
-    window.location = google_oauth_url()
+  get_valid_reff(cts_cite_collection_driver_config['cts_urn'], => get_cite_collection(build_cts_ui))
 
 # main driver entry point
 $(document).ready ->
   console.log('ready')
   cts_cite_collection_driver_config = $.extend({}, default_cts_cite_collection_driver_config, window.cts_cite_collection_driver_config)
   console.log(cts_cite_collection_driver_config['cite_collection_editor_url'])
-  google_oauth_parameters_for_fusion_tables['client_id'] = cts_cite_collection_driver_config['google_client_id']
-  google_oauth_parameters_for_fusion_tables['scope'] = cts_cite_collection_driver_config['google_scope']
+  build_cts_cite_driver()
+  # google_oauth_parameters_for_fusion_tables['client_id'] = cts_cite_collection_driver_config['google_client_id']
+  # google_oauth_parameters_for_fusion_tables['scope'] = cts_cite_collection_driver_config['google_scope']
 
-  set_access_token_cookie(filter_url_params(parse_query_string()),build_cts_cite_driver)
+  # set_access_token_cookie(filter_url_params(parse_query_string()),build_cts_cite_driver)
