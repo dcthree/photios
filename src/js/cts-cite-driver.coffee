@@ -12,8 +12,8 @@ default_cts_cite_collection_driver_config =
   google_scope: 'https://www.googleapis.com/auth/fusiontables https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
   cts_endpoint: '1_DFxPLkDrZt2JTgFo04nI6zQ9AsnnqMNRlUBb2Sq'
   cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.dc3'
-  cite_table_id: '11_Igu6u5961Dkz-cfbJOgKdYkQMwnoe3AQXw8T-K'
-  cite_collection_editor_url: 'http://ryanfb.github.io/harpocration/src/index.html'
+  cite_table_id: '1YOwprxInXb03cho6DQ20jVefAHF6a3fqhj3SGIxk'
+  cite_collection_editor_url: "http://#{window.location.hostname}/harpokration-cite/src/index.html"
 
 google_oauth_parameters_for_fusion_tables =
   response_type: 'token'
@@ -318,6 +318,7 @@ build_cts_cite_driver = ->
 $(document).ready ->
   console.log('ready')
   cts_cite_collection_driver_config = $.extend({}, default_cts_cite_collection_driver_config, window.cts_cite_collection_driver_config)
+  console.log(cts_cite_collection_driver_config['cite_collection_editor_url'])
   google_oauth_parameters_for_fusion_tables['client_id'] = cts_cite_collection_driver_config['google_client_id']
   google_oauth_parameters_for_fusion_tables['scope'] = cts_cite_collection_driver_config['google_scope']
 
