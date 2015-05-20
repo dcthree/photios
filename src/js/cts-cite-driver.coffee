@@ -31,6 +31,7 @@ add_translation = (translation) ->
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
   translation_div.append $('<span>').attr('class','entry_text').text(translation[4])
   translation_div.append $('<span>').attr('class','translation_text').text(translation[5])
+  translation_div.append $('<span>').attr('class','note').text(translation[6])
   $("li##{urn_to_id(translation[1])}").append translation_div
 
 add_translations = (urn) ->
