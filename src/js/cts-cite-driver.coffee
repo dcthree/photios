@@ -10,8 +10,8 @@ cite_collection = {}
 default_cts_cite_collection_driver_config =
   google_client_id: '429515988667-jkk0s2375vu04vasnvpotbimddag4ih8.apps.googleusercontent.com'
   google_scope: 'https://www.googleapis.com/auth/fusiontables https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
-  cts_endpoint: 'http://www.perseus.tufts.edu/hopper/CTS'
-  cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.perseus-grc1'
+  cts_endpoint: '1_DFxPLkDrZt2JTgFo04nI6zQ9AsnnqMNRlUBb2Sq'
+  cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.dc3'
   cite_table_id: '11_Igu6u5961Dkz-cfbJOgKdYkQMwnoe3AQXw8T-K'
   cite_collection_editor_url: 'http://ryanfb.github.io/harpocration/src/index.html'
 
@@ -24,7 +24,10 @@ google_oauth_url = ->
   "https://accounts.google.com/o/oauth2/auth?#{$.param(google_oauth_parameters_for_fusion_tables)}"
 
 urn_to_id = (urn) ->
-  urn.replace(/[:.-]/g,'_')
+  urn.replace(/[:.'-]/g,'_')
+
+urn_to_head = (urn) ->
+  urn.replace(/^.*:/,'').replace(/_/g,' ')
 
 add_translation = (translation) ->
   translation_div = $('<div>').attr('class','translation')
@@ -70,24 +73,19 @@ set_cts_text = (urn, head, body) ->
   add_translations(urn)
 
 get_passage = (urn) ->
-  request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
-    request: 'GetPassage'
-    urn: urn
-  )}"
-  $.ajax request_url,
-    type: 'GET'
-    dataType: 'xml'
-    crossDomain: 'true'
-    error: (jqXHR, textStatus, errorThrown) ->
-      console.log "AJAX Error: #{textStatus}"
-    success: (data) ->
-      tei_document = $($($(data)[0]).children('TEI')[0])
-      request_urn = tei_document.find('requestUrn').text()
-      entry = tei_document.find('div[type="entry"]')
-      head = $(entry).find('head').text()
-      body = $(entry).find('p').text()
-      set_cts_text(request_urn, head, body)
-
+  console.log("get_passage #{urn}")
+  fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN = #{fusion_tables_escape(urn)}", (fusion_tables_result) ->
+    # console.log fusion_tables_result
+    passage = fusion_tables_result.rows[0]
+    # 0 = URN
+    # 1 = Perseus
+    # 2 = text
+    # 3 = SOL
+    request_urn = passage[0]
+    head = urn_to_head(request_urn)
+    set_cts_text(request_urn, head, passage[2])
+    # call set_cts_text(request_urn, head, body)
+    
 show_all = ->
   $('#toggle_group button').removeClass('active')
   $('#all_entries_button').addClass('active')
@@ -118,6 +116,7 @@ build_cts_ui = ->
   $('#untranslated_button').click(show_untranslated)
   $('#translation_container').append $('<ul>').attr('id','valid_urns')
   translated_urns = 0
+  get_passage_delay = 0
   for urn in valid_urns
     urn_li = $('<li>').attr('id',urn_to_id(urn)).text(urn)
     $('#valid_urns').append urn_li
@@ -125,12 +124,13 @@ build_cts_ui = ->
     if localStorage["#{urn}[head]"]?
       set_cts_text(urn, localStorage["#{urn}[head]"], localStorage["#{urn}[body]"])
     else
-      get_passage(urn)
+      setTimeout(get_passage(urn),get_passage_delay * 30)
+      get_passage_delay += 1
     
     if cite_collection_contains_urn(urn)
       translated_urns += 1
 
-  progress = translated_urns/valid_urns.length * 100.0; 
+  progress = translated_urns/valid_urns.length * 100.0
   console.log("Progress: #{progress}")
   $('#translation_progress').attr('style',"width: #{progress}%;")
 
@@ -148,23 +148,12 @@ get_valid_reff_xml_to_urn_list = (xml) ->
 # construct a list of valid URN's and pass to callback function
 get_valid_reff = (urn, callback = null) ->
   console.log('get_valid_reff')
-  request_url = "#{cts_cite_collection_driver_config['cts_endpoint']}?#{$.param(
-    request: 'GetValidReff'
-    urn: urn
-  )}"
-  console.log(request_url)
-  $.ajax request_url,
-    type: 'GET'
-    dataType: 'xml'
-    crossDomain: true
-    error: (jqXHR, textStatus, errorThrown) ->
-      console.log "AJAX Error: #{textStatus}"
-    success: (data) ->
-      console.log(data)
-      valid_urns = get_valid_reff_xml_to_urn_list($($(data)[0]).children('contents')[0])
-      console.log valid_urns.length
-      callback() if callback?
-
+  # WHERE URN STARTS WITH '#{urn}'
+  fusion_tables_query "SELECT URN FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN STARTS WITH '#{urn}'", (fusion_tables_result) ->
+    valid_urns = (urn[0] for urn in fusion_tables_result.rows)
+    # console.log(valid_urns)
+    callback() if callback?
+  
 check_table_access = (table_id, callback) ->
   # test table access
   if get_cookie 'access_token'
@@ -177,7 +166,7 @@ check_table_access = (table_id, callback) ->
         # $('.container > h1').after $('<div>').attr('class','alert alert-error').attr('id','collection_access_error').append('You do not have permission to access this collection.')
         # disable_collection_form()
       success: (data) ->
-        console.log data
+        # console.log data
       complete: (jqXHR, textStatus) ->
         callback() if callback?
 
@@ -203,7 +192,7 @@ fusion_tables_query = (query, callback) ->
             $(this).remove()
             $('#collection_select').change()
         success: (data) ->
-          console.log data
+          # console.log data
           if callback?
             callback(data)
     when 'SELECT'
@@ -215,7 +204,7 @@ fusion_tables_query = (query, callback) ->
         error: (jqXHR, textStatus, errorThrown) ->
           console.log "AJAX Error: #{textStatus}"
         success: (data) ->
-          console.log data
+          # console.log data
           if callback?
             callback(data)
 
