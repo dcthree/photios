@@ -29,7 +29,10 @@ add_translation = (translation) ->
   translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
   translation_div.append $('<span>').attr('class','author').text(translation[2])
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
-  translation_div.append $('<span>').attr('class','entry_text').text(translation[4])
+  canonical_translation = $("li##{urn_to_id(translation[1])} .source_text p").text()
+  if translation[4].trim() != canonical_translation.trim()
+    console.log("Canonical: #{canonical_translation}")
+    translation_div.append $('<span>').attr('class','entry_text').text(translation[4])
   translation_div.append $('<span>').attr('class','translation_text').text(translation[5])
   translation_div.append $('<span>').attr('class','note').text(translation[6])
   $("li##{urn_to_id(translation[1])}").append translation_div
