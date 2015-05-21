@@ -12,7 +12,7 @@ default_cts_cite_collection_driver_config =
   cts_endpoint: '1_DFxPLkDrZt2JTgFo04nI6zQ9AsnnqMNRlUBb2Sq'
   cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.dc3'
   cite_table_id: '1YOwprxInXb03cho6DQ20jVefAHF6a3fqhj3SGIxk'
-  cite_collection_editor_url: "http://#{window.location.hostname}/harpokration-cite/src/index.html"
+  cite_collection_editor_url: "http://cite-harpokration.appspot.com/editor"
 
 urn_to_id = (urn) ->
   urn.replace(/[:.'-]/g,'_')
@@ -34,7 +34,8 @@ add_translation = (translation) ->
     console.log("Canonical: #{canonical_translation}")
     translation_div.append $('<span>').attr('class','entry_text').text(translation[4])
   translation_div.append $('<span>').attr('class','translation_text').text(translation[5])
-  translation_div.append $('<span>').attr('class','note').text(translation[6])
+  if translation[6]?.length
+    translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[6]}")
   $("li##{urn_to_id(translation[1])}").append translation_div
 
 add_translations = (urn) ->
