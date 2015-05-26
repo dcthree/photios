@@ -133,6 +133,7 @@ build_cts_ui = ->
   progress = translated_urns/valid_urns.length * 100.0
   console.log("Progress: #{progress}")
   $('#translation_progress').attr('style',"width: #{progress}%;")
+  $('#translation_progress').append $('<span>').text("#{translated_urns} / #{valid_urns.length} entries translated")
 
 # get all data from fusion table
 get_cite_collection = (callback) ->
