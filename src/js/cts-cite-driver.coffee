@@ -25,7 +25,7 @@ add_translation = (translation) ->
   edit_translation_link = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN': translation[0]
   )
-  edit_translation_a = $('<a>').attr('target','_blank').attr('href',edit_translation_link).text(translation[0])
+  edit_translation_a = $('<a>').attr('target','_blank').attr('href',edit_translation_link).text("Edit translation #{translation[0]}")
   translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
   translation_div.append $('<span>').attr('class','author').text(translation[2])
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
@@ -62,7 +62,7 @@ set_cts_text = (urn, head, body, perseus, sol) ->
     'URN-commentedOn': urn
     'Text': encodeURIComponent("#{head}: #{body}")
   )
-  editor_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',editor_href).text(urn))
+  editor_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',editor_href).text("Add translation for #{urn}"))
   $(urn_selector).append(editor_link)
   perseus_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',"http://data.perseus.org/citations/#{perseus}").text("Open #{perseus} in Perseus"))
   $(urn_selector).append(perseus_link)
