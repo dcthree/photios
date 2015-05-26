@@ -140,6 +140,8 @@ get_cite_collection = (callback) ->
   fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
     cite_collection = fusion_tables_result
     callback() if callback?
+  , ->
+    $('#translation_container').append $('<div>').attr('class','alert alert-danger').text('Error in response from Google Fusion Tables for translation collection.')
 
 get_valid_reff_xml_to_urn_list = (xml) ->
   leaf_nodes = $(xml).find('chunk').filter (index) -> (($(this).children('chunk').length) == 0)
@@ -153,12 +155,14 @@ get_valid_reff = (urn, callback = null) ->
     valid_urns = (urn[0] for urn in fusion_tables_result.rows)
     # console.log(valid_urns)
     callback() if callback?
+  , ->
+    $('#translation_container').append $('<div>').attr('class','alert alert-danger').text('Error in response from Google Fusion Tables for text collection.')
 
 # wrap values in single quotes and backslash-escape single-quotes
 fusion_tables_escape = (value) ->
   "'#{value.replace(/'/g,"\\\'")}'"
 
-fusion_tables_query = (query, callback) ->
+fusion_tables_query = (query, callback, error_callback) ->
   console.log "Query: #{query}"
   switch query.split(' ')[0]
     when 'SELECT'
@@ -169,6 +173,7 @@ fusion_tables_query = (query, callback) ->
         crossDomain: true
         error: (jqXHR, textStatus, errorThrown) ->
           console.log "AJAX Error: #{textStatus}"
+          error_callback() if error_callback?
         success: (data) ->
           # console.log data
           if callback?
