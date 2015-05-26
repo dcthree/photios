@@ -26,6 +26,15 @@ add_translation = (translation) ->
     'URN': translation[0]
   )
   edit_translation_a = $('<a>').attr('target','_blank').attr('href',edit_translation_link).text("Add a new version of translation #{translation[0]}")
+  # <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+  license_a = $('<a>',
+    rel: 'license'
+    href: 'http://creativecommons.org/licenses/by/4.0/')
+  license_a.append $('<img>',
+    alt: 'Creative Commons License'
+    style: 'border-width:0'
+    src: 'https://i.creativecommons.org/l/by/4.0/80x15.png')
+  translation_div.append $('<span>', {style: 'float:right'}).append(license_a)
   translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
   translation_div.append $('<span>').attr('class','author').text(translation[2])
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
