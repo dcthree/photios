@@ -85,17 +85,14 @@ set_cts_text = (urn, head, body, perseus, sol) ->
   $(urn_selector).append source_text
   add_translations(urn)
 
-get_passage = (urn) ->
-  console.log("get_passage #{urn}")
-  fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN = #{fusion_tables_escape(urn)}", (fusion_tables_result) ->
-    # console.log fusion_tables_result
-    passage = fusion_tables_result.rows[0]
-    request_urn = passage[0]
-    perseus = passage[1]
-    text = passage[2]
-    sol = passage[3]
-    head = urn_to_head(request_urn)
-    set_cts_text(request_urn, head, text, perseus, sol)
+# sets passage from Fusion Tables result row
+set_passage = (passage) ->
+  request_urn = passage[0]
+  perseus = passage[1]
+  text = passage[2]
+  sol = passage[3]
+  head = urn_to_head(request_urn)
+  set_cts_text(request_urn, head, text, perseus, sol)
     
 show_all = ->
   $('#toggle_group button').removeClass('active')
@@ -128,15 +125,15 @@ build_cts_ui = ->
   $('#translation_container').append $('<ul>').attr('id','valid_urns')
   translated_urns = 0
   for urn in valid_urns
-    urn_li = $('<li>').attr('id',urn_to_id(urn)).text(urn)
+    urn_li = $('<li>').attr('id',urn_to_id(urn[0])).text(urn[0])
     $('#valid_urns').append urn_li
 
-    if localStorage["#{urn}[head]"]?
-      set_cts_text(urn, localStorage["#{urn}[head]"], localStorage["#{urn}[body]"], localStorage["#{urn}[perseus]"], localStorage["#{urn}[sol]"])
+    if localStorage["#{urn[0]}[head]"]?
+      set_cts_text(urn[0], localStorage["#{urn[0]}[head]"], localStorage["#{urn[0]}[body]"], localStorage["#{urn[0]}[perseus]"], localStorage["#{urn[0]}[sol]"])
     else
-      get_passage(urn)
+      set_passage(urn)
     
-    if cite_collection_contains_urn(urn)
+    if cite_collection_contains_urn(urn[0])
       translated_urns += 1
 
   progress = translated_urns/valid_urns.length * 100.0
@@ -161,8 +158,8 @@ get_valid_reff_xml_to_urn_list = (xml) ->
 get_valid_reff = (urn, callback = null) ->
   console.log('get_valid_reff')
   # WHERE URN STARTS WITH '#{urn}'
-  fusion_tables_query "SELECT URN FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN STARTS WITH '#{urn}'", (fusion_tables_result) ->
-    valid_urns = (urn[0] for urn in fusion_tables_result.rows)
+  fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN STARTS WITH '#{urn}'", (fusion_tables_result) ->
+    valid_urns = fusion_tables_result.rows
     # console.log(valid_urns)
     callback() if callback?
   , ->
