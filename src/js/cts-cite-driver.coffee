@@ -20,6 +20,7 @@ urn_to_id = (urn) ->
 urn_to_head = (urn) ->
   urn.replace(/^.*:/,'').replace(/_/g,' ')
 
+# add UI for a single translation
 add_translation = (translation) ->
   translation_div = $('<div>').attr('class','translation')
   edit_translation_link = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
@@ -47,6 +48,8 @@ add_translation = (translation) ->
     translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[6]}")
   $("li##{urn_to_id(translation[1])}").append translation_div
 
+# add translations to UI for a given URN
+# cite_collection.rows row[1] contains URN-commentedOn
 add_translations = (urn) ->
   urn_selector = "li##{urn_to_id(urn)}"
   if cite_collection.rows?
@@ -60,11 +63,8 @@ add_translations = (urn) ->
         do (matching_row) ->
           add_translation(matching_row)
 
+# add UI for a single text URN, then add its translations afterward
 set_cts_text = (urn, head, body, perseus, sol) ->
-  localStorage["#{urn}[head]"] ?= head
-  localStorage["#{urn}[body]"] ?= body
-  localStorage["#{urn}[perseus]"] ?= perseus
-  localStorage["#{urn}[sol]"] ?= sol
   urn_selector = "li##{urn_to_id(urn)}"
   $(urn_selector).text('')
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
@@ -85,14 +85,20 @@ set_cts_text = (urn, head, body, perseus, sol) ->
   $(urn_selector).append source_text
   add_translations(urn)
 
-# sets passage from Fusion Tables result row
+# sets passage from Fusion Tables result row and memoize to localStorage
 set_passage = (passage) ->
-  request_urn = passage[0]
+  urn = passage[0]
   perseus = passage[1]
-  text = passage[2]
+  body = passage[2]
   sol = passage[3]
-  head = urn_to_head(request_urn)
-  set_cts_text(request_urn, head, text, perseus, sol)
+  head = urn_to_head(urn)
+
+  localStorage["#{urn}[head]"] = head
+  localStorage["#{urn}[body]"] = body
+  localStorage["#{urn}[perseus]"] = perseus
+  localStorage["#{urn}[sol]"] = sol
+
+  set_cts_text(urn, head, body, perseus, sol)
     
 show_all = ->
   $('#toggle_group button').removeClass('active')
@@ -150,14 +156,9 @@ get_cite_collection = (callback) ->
   , ->
     $('#translation_container').append $('<div>').attr('class','alert alert-danger').text('Error in response from Google Fusion Tables for translation collection.')
 
-get_valid_reff_xml_to_urn_list = (xml) ->
-  leaf_nodes = $(xml).find('chunk').filter (index) -> (($(this).children('chunk').length) == 0)
-  "#{cts_cite_collection_driver_config['cts_urn']}:#{$(chunk).parents('chunk').map((index) -> $(this).attr('n')).toArray().join('.')}.#{$(chunk).attr('n')}" for chunk in leaf_nodes
-
 # construct a list of valid URN's and pass to callback function
 get_valid_reff = (urn, callback = null) ->
   console.log('get_valid_reff')
-  # WHERE URN STARTS WITH '#{urn}'
   fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN STARTS WITH '#{urn}'", (fusion_tables_result) ->
     valid_urns = fusion_tables_result.rows
     # console.log(valid_urns)
@@ -188,6 +189,7 @@ fusion_tables_query = (query, callback, error_callback) ->
 
 build_cts_cite_driver = ->
   console.log('build')
+  # fetch CTS, fetch CITE, build UI
   get_valid_reff(cts_cite_collection_driver_config['cts_urn'], => get_cite_collection(build_cts_ui))
 
 # main driver entry point
