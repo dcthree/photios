@@ -15,7 +15,7 @@ default_cts_cite_collection_driver_config =
   cite_collection_editor_url: "http://cite-harpokration.appspot.com/editor"
 
 urn_to_id = (urn) ->
-  urn.replace(/[:.'-]/g,'_')
+  urn.replace(/[:.,'-]/g,'_')
 
 urn_to_head = (urn) ->
   urn.replace(/^.*:/,'').replace(/_/g,' ')
