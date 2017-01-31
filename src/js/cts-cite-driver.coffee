@@ -8,11 +8,11 @@ valid_urns = []
 cite_collection = {}
 
 default_cts_cite_collection_driver_config =
-  google_api_key: 'AIzaSyACO-ZANrYxHFG44v8kqsfGb6taylh2aDk'
-  cts_endpoint: '1_DFxPLkDrZt2JTgFo04nI6zQ9AsnnqMNRlUBb2Sq'
-  cts_urn: 'urn:cts:greekLit:tlg1389.tlg001.dc3'
-  cite_table_id: '1YOwprxInXb03cho6DQ20jVefAHF6a3fqhj3SGIxk'
-  cite_collection_editor_url: "http://cite-harpokration.appspot.com/editor"
+  google_api_key: 'AIzaSyCsBB8U6qfzFKFXWWpm8AN3iooxey_7lKU'
+  cts_endpoint: '1_veTVGdKvI_WQ-8jU4al9ESWvjgTqjFzGreeAaKK'
+  cts_urn: 'urn:cts:greekLit:tlg4040.lexicon.dc3'
+  cite_table_id: '1Tv86Sn9h4CGug3I_Bp20yNT1wT4Ad2Ufp93zUiQP'
+  cite_collection_editor_url: "localhost:8988/cite-collection-manager/editor"
 
 urn_to_id = (urn) ->
   urn.replace(/[:.,'-]/g,'_')
