@@ -12,7 +12,7 @@ default_cts_cite_collection_driver_config =
   cts_endpoint: '1_veTVGdKvI_WQ-8jU4al9ESWvjgTqjFzGreeAaKK'
   cts_urn: 'urn:cts:greekLit:tlg4040.lexicon.dc3'
   cite_table_id: '1Tv86Sn9h4CGug3I_Bp20yNT1wT4Ad2Ufp93zUiQP'
-  cite_collection_editor_url: "localhost:8988/cite-collection-manager/editor"
+  cite_collection_editor_url: "//lyrical-flame-685.appspot.com/editor"
 
 urn_to_id = (urn) ->
   urn.replace(/[:.,'-]/g,'_')
