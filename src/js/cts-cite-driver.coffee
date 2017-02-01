@@ -64,41 +64,31 @@ add_translations = (urn) ->
           add_translation(matching_row)
 
 # add UI for a single text URN, then add its translations afterward
-set_cts_text = (urn, head, body, perseus, sol) ->
+set_cts_text = (urn, head, tlg) ->
   urn_selector = "li##{urn_to_id(urn)}"
   $(urn_selector).text('')
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN-commentedOn': urn
-    'Text': encodeURIComponent("#{head}: #{body}")
   )
   editor_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',editor_href).text("Add translation for #{urn}"))
-  $(urn_selector).append(editor_link)
-  perseus_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',"http://data.perseus.org/citations/#{perseus}").text("Open #{perseus} in Perseus"))
-  $(urn_selector).append(perseus_link)
-  if sol?.length
-    [sol1, sol2] = sol.split(',')
-    sol_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',"http://www.stoa.org/sol-entries/#{sol1}/#{sol2}").text("Open Adler number #{sol1} #{sol2} in the Suda On Line"))
-    $(urn_selector).append(sol_link)
   source_text = $('<div>').attr('class','source_text')
   source_text.append $('<head>').text(head)
-  source_text.append $('<p>').text(body)
-  $(urn_selector).append source_text
+  tlg_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',tlg).text("Open in TLG"))
+  source_text.append tlg_link
+  $(urn_selector).append(source_text)
+  $(urn_selector).append(editor_link)
   add_translations(urn)
 
 # sets passage from Fusion Tables result row and memoize to localStorage
 set_passage = (passage) ->
   urn = passage[0]
-  perseus = passage[1]
-  body = passage[2]
-  sol = passage[3]
-  head = urn_to_head(urn)
+  head = passage[1]
+  tlg = passage[2]
 
   localStorage["#{urn}[head]"] = head
-  localStorage["#{urn}[body]"] = body
-  localStorage["#{urn}[perseus]"] = perseus
-  localStorage["#{urn}[sol]"] = sol
+  localStorage["#{urn}[tlg]"] = tlg
 
-  set_cts_text(urn, head, body, perseus, sol)
+  set_cts_text(urn, head, tlg)
     
 show_all = ->
   $('#toggle_group button').removeClass('active')
@@ -135,7 +125,7 @@ build_cts_ui = ->
     $('#valid_urns').append urn_li
 
     if localStorage["#{urn[0]}[head]"]?
-      set_cts_text(urn[0], localStorage["#{urn[0]}[head]"], localStorage["#{urn[0]}[body]"], localStorage["#{urn[0]}[perseus]"], localStorage["#{urn[0]}[sol]"])
+      set_cts_text(urn[0], localStorage["#{urn[0]}[head]"], localStorage["#{urn[0]}[tlg]"])
     else
       set_passage(urn)
     
@@ -159,7 +149,7 @@ get_cite_collection = (callback) ->
 # construct a list of valid URN's and pass to callback function
 get_valid_reff = (urn, callback = null) ->
   console.log('get_valid_reff')
-  fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN STARTS WITH '#{urn}'", (fusion_tables_result) ->
+  fusion_tables_query "SELECT URN,Headword,TLG FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN STARTS WITH '#{urn}'", (fusion_tables_result) ->
     valid_urns = fusion_tables_result.rows
     # console.log(valid_urns)
     callback() if callback?
