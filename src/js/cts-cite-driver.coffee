@@ -1,7 +1,7 @@
 ---
 ---
 
-FUSION_TABLES_URI = 'https://www.googleapis.com/fusiontables/v1'
+FUSION_TABLES_URI = 'https://www.googleapis.com/fusiontables/v2'
 
 cts_cite_collection_driver_config = {}
 valid_urns = []
