@@ -185,6 +185,9 @@ build_cts_cite_driver = ->
 # main driver entry point
 $(document).ready ->
   console.log('ready')
+  $('#loadingDiv').hide()
+  $(document).ajaxStart -> $('#loadingDiv').show()
+  $(document).ajaxStop -> $('#loadingDiv').hide()
   cts_cite_collection_driver_config = $.extend({}, default_cts_cite_collection_driver_config, window.cts_cite_collection_driver_config)
   console.log(cts_cite_collection_driver_config['cite_collection_editor_url'])
   build_cts_cite_driver()
