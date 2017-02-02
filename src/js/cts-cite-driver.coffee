@@ -62,6 +62,8 @@ add_translations = (urn) ->
       for matching_row in matching_rows
         do (matching_row) ->
           add_translation(matching_row)
+    else
+      $(urn_selector).addClass('no_translation')
 
 # add UI for a single text URN, then add its translations afterward
 set_cts_text = (urn, head, tlg) ->
@@ -99,12 +101,12 @@ show_untranslated = ->
   $('#toggle_group button').removeClass('active')
   $('#untranslated_button').addClass('active')
   $('.has_translation').hide()
-  $('li:not(.has_translation)').show()
+  $('.no_translation').show()
 
 show_translated = ->
   $('#toggle_group button').removeClass('active')
   $('#translated_button').addClass('active')
-  $('li:not(.has_translation)').hide()
+  $('.no_translation').hide()
   $('.has_translation').show()
 
 cite_collection_contains_urn = (urn) ->
