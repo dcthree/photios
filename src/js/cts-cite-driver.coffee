@@ -93,21 +93,25 @@ set_passage = (passage) ->
   set_cts_text(urn, head, tlg)
     
 show_all = ->
-  $('#toggle_group button').removeClass('active')
-  $('#all_entries_button').addClass('active')
-  $('li').show()
+  unless $('#all_entries_button').hasClass('active')
+    $('#toggle_group button').removeClass('active')
+    $('#all_entries_button').addClass('active')
+    $('#valid_urns').remove()
+    add_valid_urns()
 
 show_untranslated = ->
-  $('#toggle_group button').removeClass('active')
-  $('#untranslated_button').addClass('active')
-  $('.has_translation').hide()
-  $('.no_translation').show()
+  unless $('#untranslated_button').hasClass('active')
+    $('#toggle_group button').removeClass('active')
+    $('#untranslated_button').addClass('active')
+    $('#valid_urns').remove()
+    add_valid_urns()
 
 show_translated = ->
-  $('#toggle_group button').removeClass('active')
-  $('#translated_button').addClass('active')
-  $('.no_translation').hide()
-  $('.has_translation').show()
+  unless $('#translated_button').hasClass('active')
+    $('#toggle_group button').removeClass('active')
+    $('#translated_button').addClass('active')
+    $('#valid_urns').remove()
+    add_valid_urns()
 
 cite_collection_contains_urn = (urn) ->
   if cite_collection.rows?
@@ -116,24 +120,40 @@ cite_collection_contains_urn = (urn) ->
       return true
   return false
 
-build_cts_ui = ->
-  $('#all_entries_button').click(show_all)
-  $('#translated_button').click(show_translated)
-  $('#untranslated_button').click(show_untranslated)
+add_urn_li = (urn) ->
+  urn_li = $('<li>').attr('id',urn_to_id(urn[0])).text(urn[0])
+  $('#valid_urns').append urn_li
+
+  if localStorage["#{urn[0]}[head]"]?
+    set_cts_text(urn[0], localStorage["#{urn[0]}[head]"], localStorage["#{urn[0]}[tlg]"])
+  else
+    set_passage(urn)
+
+add_valid_urns = ->
+  console.log('add_valid_urns')
   $('#translation_container').append $('<ul>').attr('id','valid_urns')
   translated_urns = 0
   for urn in valid_urns
-    urn_li = $('<li>').attr('id',urn_to_id(urn[0])).text(urn[0])
-    $('#valid_urns').append urn_li
-
-    if localStorage["#{urn[0]}[head]"]?
-      set_cts_text(urn[0], localStorage["#{urn[0]}[head]"], localStorage["#{urn[0]}[tlg]"])
-    else
-      set_passage(urn)
+    if $('#all_entries_button').hasClass('active')
+      add_urn_li(urn)
+    else if $('#untranslated_button').hasClass('active') && !cite_collection_contains_urn(urn[0])
+      add_urn_li(urn)
+    else if $('#translated_button').hasClass('active') && cite_collection_contains_urn(urn[0])
+      add_urn_li(urn)
     
     if cite_collection_contains_urn(urn[0])
       translated_urns += 1
 
+  return translated_urns
+
+build_cts_ui = ->
+  console.log('build_cts_ui')
+  $('#all_entries_button').click(show_all)
+  $('#translated_button').click(show_translated)
+  $('#untranslated_button').click(show_untranslated)
+  $('#translation_container').append $('<ul>').attr('id','valid_urns')
+
+  translated_urns = add_valid_urns()
   progress = translated_urns/valid_urns.length * 100.0
   console.log("Progress: #{progress}")
   $('#translation_progress').attr('style',"width: #{progress}%;")
