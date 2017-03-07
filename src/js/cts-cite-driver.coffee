@@ -81,14 +81,11 @@ set_cts_text = (urn, head, tlg) ->
   $(urn_selector).append(editor_link)
   add_translations(urn)
 
-# sets passage from Fusion Tables result row and memoize to localStorage
+# sets passage from Fusion Tables result row
 set_passage = (passage) ->
   urn = passage[0]
   head = passage[1]
   tlg = passage[2]
-
-  localStorage["#{urn}[head]"] = head
-  localStorage["#{urn}[tlg]"] = tlg
 
   set_cts_text(urn, head, tlg)
     
@@ -124,10 +121,7 @@ add_urn_li = (urn) ->
   urn_li = $('<li>').attr('id',urn_to_id(urn[0])).text(urn[0])
   $('#valid_urns').append urn_li
 
-  if localStorage["#{urn[0]}[head]"]?
-    set_cts_text(urn[0], localStorage["#{urn[0]}[head]"], localStorage["#{urn[0]}[tlg]"])
-  else
-    set_passage(urn)
+  set_passage(urn)
 
 add_valid_urns = ->
   console.log('add_valid_urns')
