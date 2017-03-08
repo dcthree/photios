@@ -43,9 +43,9 @@ add_translation = (translation) ->
   if translation[4].trim() != canonical_translation.trim()
     console.log("Canonical: #{canonical_translation}")
     translation_div.append $('<span>').attr('class','entry_text').text(translation[4])
-  translation_div.append $('<span>').attr('class','translation_text').text(translation[5])
-  if translation[6]?.length
-    translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[6]}")
+  translation_div.append $('<span>').attr('class','translation_text').text(translation[6])
+  if translation[7]?.length
+    translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[7]}")
   $("li##{urn_to_id(translation[1])}").append translation_div
 
 # add translations to UI for a given URN
