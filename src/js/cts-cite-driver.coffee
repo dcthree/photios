@@ -6,6 +6,7 @@ FUSION_TABLES_URI = 'https://www.googleapis.com/fusiontables/v2'
 cts_cite_collection_driver_config = {}
 valid_urns = []
 cite_collection = {}
+cite_fields = ["URN","URN-commentedOn","Author","TranslatedBy","Text","Date","Translation","Notes"]
 
 default_cts_cite_collection_driver_config =
   google_api_key: 'AIzaSyCsBB8U6qfzFKFXWWpm8AN3iooxey_7lKU'
@@ -26,7 +27,7 @@ add_translation = (translation) ->
   edit_translation_link = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN': translation[0]
   )
-  edit_translation_a = $('<a>').attr('target','_blank').attr('href',edit_translation_link).text("Add a new version of translation #{translation[0]}")
+  edit_translation_a = $('<a>').attr('target','_blank').attr('href',edit_translation_link).text("Add a new version of translation #{translation[cite_fields.indexOf('URN')]}")
   # <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
   license_a = $('<a>',
     rel: 'license'
@@ -37,16 +38,19 @@ add_translation = (translation) ->
     src: 'https://i.creativecommons.org/l/by/4.0/80x15.png')
   translation_div.append $('<span>', {style: 'float:right'}).append(license_a)
   translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
-  translation_div.append $('<span>').attr('class','author').text(translation[2])
+  translation_div.append $('<span>').attr('class','author').text(translation[cite_fields.indexOf('Author')])
+  translated_by = translation[cite_fields.indexOf('TranslatedBy')]
+  if translated_by?.length
+    translation_div.append $('<span>').attr('class','author').text('Translated By: ' + translated_by)
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
-  canonical_translation = $("li##{urn_to_id(translation[1])} .source_text p").text()
-  if translation[4].trim() != canonical_translation.trim()
-    console.log("Canonical: #{canonical_translation}")
-    translation_div.append $('<span>').attr('class','entry_text').text(translation[4])
-  translation_div.append $('<span>').attr('class','translation_text').text(translation[6])
-  if translation[7]?.length
-    translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[7]}")
-  $("li##{urn_to_id(translation[1])}").append translation_div
+  canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf('URN-commentedOn')])} .source_text p").text()
+  if translation[cite_fields.indexOf('Text')].trim() != canonical_text.trim()
+    console.log("Canonical text: #{canonical_text}")
+    translation_div.append $('<span>').attr('class','entry_text').text(translation[cite_fields.indexOf('Text')])
+  translation_div.append $('<span>').attr('class','translation_text').text(translation[cite_fields.indexOf('Translation')])
+  if translation[cite_fields.indexOf('Notes')]?.length
+    translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[cite_fields.indexOf('Notes')]}")
+  $("li##{urn_to_id(translation[cite_fields.indexOf('URN-commentedOn')])}").append translation_div
 
 # add translations to UI for a given URN
 # cite_collection.rows row[1] contains URN-commentedOn
@@ -156,7 +160,7 @@ build_cts_ui = ->
 # get all data from fusion table
 get_cite_collection = (callback) ->
   console.log('get_cite_collection')
-  fusion_tables_query "SELECT * FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
+  fusion_tables_query "SELECT #{cite_fields.join(',')} FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
     cite_collection = fusion_tables_result
     callback() if callback?
   , ->
