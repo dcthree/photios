@@ -6,7 +6,7 @@ FUSION_TABLES_URI = 'https://www.googleapis.com/fusiontables/v2'
 cts_cite_collection_driver_config = {}
 valid_urns = []
 cite_collection = {}
-cite_fields = ["URN","URN-commentedOn","Author","TranslatedBy","Text","Date","Translation","Notes"]
+cite_fields = ["URN","'URN-commentedOn'","Author","TranslatedBy","Text","Date","Translation","Notes"]
 
 default_cts_cite_collection_driver_config =
   google_api_key: 'AIzaSyCsBB8U6qfzFKFXWWpm8AN3iooxey_7lKU'
@@ -43,21 +43,21 @@ add_translation = (translation) ->
   if translated_by?.length
     translation_div.append $('<span>').attr('class','author').text('Translated By: ' + translated_by)
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
-  canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf('URN-commentedOn')])} .source_text p").text()
+  canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])} .source_text p").text()
   if translation[cite_fields.indexOf('Text')].trim() != canonical_text.trim()
     console.log("Canonical text: #{canonical_text}")
     translation_div.append $('<span>').attr('class','entry_text').text(translation[cite_fields.indexOf('Text')])
   translation_div.append $('<span>').attr('class','translation_text').text(translation[cite_fields.indexOf('Translation')])
   if translation[cite_fields.indexOf('Notes')]?.length
     translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[cite_fields.indexOf('Notes')]}")
-  $("li##{urn_to_id(translation[cite_fields.indexOf('URN-commentedOn')])}").append translation_div
+  $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])}").append translation_div
 
 # add translations to UI for a given URN
 # cite_collection.rows row[1] contains URN-commentedOn
 add_translations = (urn) ->
   urn_selector = "li##{urn_to_id(urn)}"
   if cite_collection.rows?
-    matching_rows = cite_collection.rows.filter (row) -> row[1] == urn
+    matching_rows = cite_collection.rows.filter (row) -> row[cite_fields.indexOf("'URN-commentedOn'")] == urn
     if matching_rows.length > 0
       $(urn_selector).addClass('has_translation')
       # $(urn_selector).prepend ' \u2713'
@@ -116,7 +116,7 @@ show_translated = ->
 
 cite_collection_contains_urn = (urn) ->
   if cite_collection.rows?
-    matching_rows = cite_collection.rows.filter (row) -> row[1] == urn
+    matching_rows = cite_collection.rows.filter (row) -> row[cite_fields.indexOf("'URN-commentedOn'")] == urn
     if matching_rows.length > 0
       return true
   return false
@@ -160,7 +160,7 @@ build_cts_ui = ->
 # get all data from fusion table
 get_cite_collection = (callback) ->
   console.log('get_cite_collection')
-  fusion_tables_query "SELECT #{cite_fields.join(',')} FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
+  fusion_tables_query "SELECT #{cite_fields.join(', ')} FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
     cite_collection = fusion_tables_result
     callback() if callback?
   , ->
@@ -193,7 +193,7 @@ fusion_tables_query = (query, callback, error_callback) ->
           console.log "AJAX Error: #{textStatus}"
           error_callback() if error_callback?
         success: (data) ->
-          # console.log data
+          console.log data
           if callback?
             callback(data)
 
