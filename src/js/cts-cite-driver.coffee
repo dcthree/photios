@@ -38,7 +38,7 @@ add_translation = (translation) ->
     src: 'https://i.creativecommons.org/l/by/4.0/80x15.png')
   translation_div.append $('<span>', {style: 'float:right'}).append(license_a)
   translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
-  translation_div.append $('<span>').attr('class','author').text(translation[cite_fields.indexOf('Author')])
+  translation_div.append $('<span>').attr('class','author').text('Entered By: ' + translation[cite_fields.indexOf('Author')])
   translated_by = translation[cite_fields.indexOf('TranslatedBy')]
   if translated_by?.length
     translation_div.append $('<span>').attr('class','author').text('Translated By: ' + translated_by)
