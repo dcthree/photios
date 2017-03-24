@@ -92,7 +92,7 @@ set_passage = (passage) ->
   tlg = passage[2]
 
   set_cts_text(urn, head, tlg)
-    
+
 show_all = ->
   unless $('#all_entries_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
@@ -138,7 +138,7 @@ add_valid_urns = ->
       add_urn_li(urn)
     else if $('#translated_button').hasClass('active') && cite_collection_contains_urn(urn[0])
       add_urn_li(urn)
-    
+
     if cite_collection_contains_urn(urn[0])
       translated_urns += 1
 
@@ -156,6 +156,8 @@ build_cts_ui = ->
   console.log("Progress: #{progress}")
   $('#translation_progress').attr('style',"width: #{progress}%;")
   $('#translation_progress').append $('<span>').text("#{translated_urns} / #{valid_urns.length} entries translated")
+  if window.location.hash
+    window.scrollTo(0,$(window.location.hash).position().top - 40)
 
 # get all data from fusion table
 get_cite_collection = (callback) ->
