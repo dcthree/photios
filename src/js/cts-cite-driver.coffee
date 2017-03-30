@@ -6,6 +6,7 @@ FUSION_TABLES_URI = 'https://www.googleapis.com/fusiontables/v2'
 cts_cite_collection_driver_config = {}
 valid_urns = []
 cite_collection = {}
+headword_mapping = {}
 cite_fields = ["URN","'URN-commentedOn'","Author","TranslatedBy","Text","Date","Translation","Notes"]
 md =  new Markdown.Converter()
 
@@ -46,7 +47,7 @@ add_translation = (translation) ->
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
   canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])} .source_text p").text()
   if translation[cite_fields.indexOf('Text')].trim() != canonical_text.trim()
-    console.log("Canonical text: #{canonical_text}")
+    # console.log("Canonical text: #{canonical_text}")
     translation_div.append $('<span>').attr('class','entry_text').text(translation[cite_fields.indexOf('Text')])
   translation_div.append $('<span>').attr('class','translation_text').html(md.makeHtml(translation[cite_fields.indexOf('Translation')]))
   if translation[cite_fields.indexOf('Notes')]?.length
@@ -74,16 +75,27 @@ add_translations = (urn) ->
 set_cts_text = (urn, head, tlg) ->
   urn_selector = "li##{urn_to_id(urn)}"
   $(urn_selector).text('')
+
+  source_text = $('<div>').attr('class','source_text')
+  source_text.append $('<head>').text(head)
+  $(urn_selector).append(source_text)
+
+  urn_components = urn.split(':')
+  reference = 'photios;' + urn_components[-2..].join(';')
+  if headword_mapping[reference]
+    image_href = "https://dcthree.github.io/photios-images/#nanogallery/photios/pages/#{headword_mapping[reference]}"
+    image_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',image_href).text("Page image"))
+    $(urn_selector).append(image_link)
+ 
+  tlg_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',tlg).text("Open in TLG"))
+  $(urn_selector).append(tlg_link)
+
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN-commentedOn': urn
   )
   editor_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',editor_href).text("Add translation for #{urn}"))
-  source_text = $('<div>').attr('class','source_text')
-  source_text.append $('<head>').text(head)
-  tlg_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',tlg).text("Open in TLG"))
-  source_text.append tlg_link
-  $(urn_selector).append(source_text)
   $(urn_selector).append(editor_link)
+
   add_translations(urn)
 
 # sets passage from Fusion Tables result row
@@ -160,6 +172,19 @@ build_cts_ui = ->
   if window.location.hash
     window.scrollTo(0,$(window.location.hash).position().top - 40)
 
+# get headword mapping JSON
+get_headword_mapping = (callback) ->
+  console.log('get_headword_mapping')
+  $.ajax '/data/headword_mapping.json',
+    type: 'GET'
+    dataType: 'json'
+    error: (jqXHR, textStatus, errorThrown) ->
+      console.log "AJAX Error: #{textStatus}"
+      callback() if callback?
+    success: (data) ->
+      headword_mapping = data
+      callback() if callback?
+
 # get all data from fusion table
 get_cite_collection = (callback) ->
   console.log('get_cite_collection')
@@ -203,7 +228,7 @@ fusion_tables_query = (query, callback, error_callback) ->
 build_cts_cite_driver = ->
   console.log('build')
   # fetch CTS, fetch CITE, build UI
-  get_valid_reff(cts_cite_collection_driver_config['cts_urn'], => get_cite_collection(build_cts_ui))
+  get_valid_reff(cts_cite_collection_driver_config['cts_urn'], -> get_cite_collection( -> get_headword_mapping(build_cts_ui)))
 
 # main driver entry point
 $(document).ready ->
