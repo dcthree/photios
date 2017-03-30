@@ -7,12 +7,13 @@ cts_cite_collection_driver_config = {}
 valid_urns = []
 cite_collection = {}
 cite_fields = ["URN","'URN-commentedOn'","Author","TranslatedBy","Text","Date","Translation","Notes"]
+md =  new Markdown.Converter()
 
 default_cts_cite_collection_driver_config =
   google_api_key: 'AIzaSyCsBB8U6qfzFKFXWWpm8AN3iooxey_7lKU'
   cts_endpoint: '1_veTVGdKvI_WQ-8jU4al9ESWvjgTqjFzGreeAaKK'
   cts_urn: 'urn:cts:greekLit:tlg4040.lexicon.dc3'
-  cite_table_id: '1Tv86Sn9h4CGug3I_Bp20yNT1wT4Ad2Ufp93zUiQP'
+  cite_table_id: '1q_OAsgFRRKaV-D0CURogol5V_oda700vZ3FmnhU5'
   cite_collection_editor_url: "//lyrical-flame-685.appspot.com/editor"
 
 urn_to_id = (urn) ->
@@ -47,9 +48,9 @@ add_translation = (translation) ->
   if translation[cite_fields.indexOf('Text')].trim() != canonical_text.trim()
     console.log("Canonical text: #{canonical_text}")
     translation_div.append $('<span>').attr('class','entry_text').text(translation[cite_fields.indexOf('Text')])
-  translation_div.append $('<span>').attr('class','translation_text').text(translation[cite_fields.indexOf('Translation')])
+  translation_div.append $('<span>').attr('class','translation_text').html(md.makeHtml(translation[cite_fields.indexOf('Translation')]))
   if translation[cite_fields.indexOf('Notes')]?.length
-    translation_div.append $('<span>').attr('class','note').text("Notes: #{translation[cite_fields.indexOf('Notes')]}")
+    translation_div.append $('<span>').attr('class','note').html("Notes: #{md.makeHtml(translation[cite_fields.indexOf('Notes')])}")
   $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])}").append translation_div
 
 # add translations to UI for a given URN
