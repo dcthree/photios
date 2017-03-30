@@ -175,7 +175,7 @@ build_cts_ui = ->
 # get headword mapping JSON
 get_headword_mapping = (callback) ->
   console.log('get_headword_mapping')
-  $.ajax '/data/headword_mapping.json',
+  $.ajax 'data/headword_mapping.json',
     type: 'GET'
     dataType: 'json'
     error: (jqXHR, textStatus, errorThrown) ->
