@@ -13,7 +13,7 @@ default_cts_cite_collection_driver_config =
   google_api_key: 'AIzaSyCsBB8U6qfzFKFXWWpm8AN3iooxey_7lKU'
   cts_endpoint: '1_veTVGdKvI_WQ-8jU4al9ESWvjgTqjFzGreeAaKK'
   cts_urn: 'urn:cts:greekLit:tlg4040.lexicon.dc3'
-  cite_table_id: '1q_OAsgFRRKaV-D0CURogol5V_oda700vZ3FmnhU5'
+  cite_table_id: '1Tv86Sn9h4CGug3I_Bp20yNT1wT4Ad2Ufp93zUiQP'
   cite_collection_editor_url: "//lyrical-flame-685.appspot.com/editor"
 
 urn_to_id = (urn) ->
