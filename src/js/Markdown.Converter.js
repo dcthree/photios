@@ -617,7 +617,26 @@ else
               return "https://dcthree.github.io/photios/#urn_cts_greekLit_tlg4040_lexicon_dc3_" + parts[0] + "_" + parts[1];
             case "tlg": //e.g. tlg:0012;001;13.6
               var cit = parts.length == 3?parts[2].split("."):["1","1"];
-              return "http://stephanus.tlg.uci.edu/Iris/inst/browser.jsp#doc=tlg&aid=" +parts[0] + "&wid=" + parts[1] + "&ct=~y" + cit[0] + "z" + cit[1] + "&l=40&td=greek&links=tlg";
+              for (var i = 0; i < cit.length; i++) {
+                if (!cit[i]) {
+                  cit[i] = "1";
+                }
+              }
+              var citquery;
+              switch(cit.length) {
+                case 1:
+                  citquery = "&ct=~z" + cit[0];
+                  break;
+                case 2:
+                  citquery = "&ct=~y" + cit[0] + "z" + cit[1];
+                  break;
+                case 3:
+                  citquery = "&ct=~x" + cit[0] + "y" + cit[1] + "z" + cit[2];
+                  break;
+                case 4:
+                  citquery = "&ct=~w" + cit[0] + "x" + cit[1] + "y" + cit[2] + "z" cit[3];
+              }
+              return "http://stephanus.tlg.uci.edu/Iris/inst/browser.jsp#doc=tlg&aid=" +parts[0] + "&wid=" + parts[1] + citquery + "&l=40&td=greek&links=tlg";
             default:
               return url;
           }
