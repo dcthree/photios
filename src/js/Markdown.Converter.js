@@ -634,7 +634,7 @@ else
                   citquery = "&ct=~x" + cit[0] + "y" + cit[1] + "z" + cit[2];
                   break;
                 case 4:
-                  citquery = "&ct=~w" + cit[0] + "x" + cit[1] + "y" + cit[2] + "z" cit[3];
+                  citquery = "&ct=~w" + cit[0] + "x" + cit[1] + "y" + cit[2] + "z" + cit[3];
               }
               return "http://stephanus.tlg.uci.edu/Iris/inst/browser.jsp#doc=tlg&aid=" +parts[0] + "&wid=" + parts[1] + citquery + "&l=40&td=greek&links=tlg";
             default:
