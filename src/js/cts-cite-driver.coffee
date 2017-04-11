@@ -7,7 +7,7 @@ cts_cite_collection_driver_config = {}
 valid_urns = []
 cite_collection = {}
 headword_mapping = {}
-cite_fields = ["URN","'URN-commentedOn'","Author","TranslatedBy","Text","Date","Translation","Notes"]
+cite_fields = ["URN","'URN-commentedOn'","Author","TranslatedBy","Text","Date","Translation","Notes","VettingStatus"]
 md =  new Markdown.Converter()
 
 default_cts_cite_collection_driver_config =
@@ -44,6 +44,10 @@ add_translation = (translation) ->
   translated_by = translation[cite_fields.indexOf('TranslatedBy')]
   if translated_by?.length
     translation_div.append $('<span>').attr('class','author').text('Translated By: ' + translated_by)
+  vetting_status = translation[cite_fields.indexOf('VettingStatus')]
+  vetting_status = if vetting_status?.length then vetting_status else 'Unvetted'
+  translation_div.append $('<span>').attr('class','vettingStatus').text('Vetting Status: ' + vetting_status)
+  translation_div.append $('<br>')
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
   canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])} .source_text p").text()
   if translation[cite_fields.indexOf('Text')].trim() != canonical_text.trim()
@@ -51,6 +55,7 @@ add_translation = (translation) ->
     translation_div.append $('<span>').attr('class','entry_text').text(translation[cite_fields.indexOf('Text')])
   translation_div.append $('<span>').attr('class','translation_text').html(md.makeHtml(translation[cite_fields.indexOf('Translation')]))
   if translation[cite_fields.indexOf('Notes')]?.length
+    translation_div.append $('<br>')
     translation_div.append $('<span>').attr('class','note').html("Notes: #{md.makeHtml(translation[cite_fields.indexOf('Notes')])}")
   $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])}").append translation_div
 
