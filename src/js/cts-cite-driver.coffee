@@ -16,6 +16,7 @@ default_cts_cite_collection_driver_config =
   cts_urn: 'urn:cts:greekLit:tlg4040.lexicon.dc3'
   cite_table_id: '1Tv86Sn9h4CGug3I_Bp20yNT1wT4Ad2Ufp93zUiQP'
   cite_collection_editor_url: "//lyrical-flame-685.appspot.com/editor"
+  cite_collection_editor_url_for_editors: "//dcthree.github.io/cite-collection-editor/"
 
 urn_to_id = (urn) ->
   urn.replace(/[:.,'-]/g,'_')
@@ -230,6 +231,16 @@ fusion_tables_query = (query, callback, error_callback) ->
           if callback?
             callback(data)
 
+# parse URL hash parameters into an associative array object
+parse_query_string = (query_string) ->
+  query_string ?= location.hash.substring(1)
+  params = {}
+  if query_string.length > 0
+    regex = /([^&=]+)=([^&]*)/g
+    while m = regex.exec(query_string)
+      params[decodeURIComponent(m[1])] = decodeURIComponent(m[2])
+  return params
+
 build_cts_cite_driver = ->
   console.log('build')
   # fetch CTS, fetch CITE, build UI
@@ -242,5 +253,7 @@ $(document).ready ->
   $(document).ajaxStart -> $('#loadingDiv').show()
   $(document).ajaxStop -> $('#loadingDiv').hide()
   cts_cite_collection_driver_config = $.extend({}, default_cts_cite_collection_driver_config, window.cts_cite_collection_driver_config)
+  if parse_query_string()['editor']?
+    cts_cite_collection_driver_config['cite_collection_editor_url'] = cts_cite_collection_driver_config['cite_collection_editor_url_for_editors']
   console.log(cts_cite_collection_driver_config['cite_collection_editor_url'])
   build_cts_cite_driver()
