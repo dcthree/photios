@@ -45,8 +45,8 @@ add_translation = (translation) ->
   if translated_by?.length
     translation_div.append $('<span>').attr('class','author').text('Translated By: ' + translated_by)
   vetting_status = translation[cite_fields.indexOf('VettingStatus')]
-  vetting_status = if vetting_status?.length then vetting_status else 'Unvetted'
-  translation_div.append $('<span>').attr('class','vettingStatus').text('Vetting Status: ' + vetting_status)
+  vetting_status = if vetting_status?.length then vetting_status else 'Not Peer Reviewed'
+  translation_div.append $('<span>').attr('class','vettingStatus').text('Peer Review Status: ' + vetting_status)
   translation_div.append $('<br>')
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
   canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])} .source_text p").text()
