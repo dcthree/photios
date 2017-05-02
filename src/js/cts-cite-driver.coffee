@@ -175,7 +175,7 @@ build_cts_ui = ->
   console.log("Progress: #{progress}")
   $('#translation_progress').attr('style',"width: #{progress}%;")
   $('#translation_progress').append $('<span>').text("#{translated_urns} / #{valid_urns.length} entries translated")
-  if window.location.hash
+  if window.location.hash && !(parse_query_string()['editor']?)
     window.scrollTo(0,$(window.location.hash).position().top - 40)
 
 # get headword mapping JSON
