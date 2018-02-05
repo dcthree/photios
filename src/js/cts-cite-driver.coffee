@@ -7,6 +7,7 @@ cts_cite_collection_driver_config = {}
 valid_urns = []
 cite_collection = {}
 headword_mapping = {}
+urn_mapping = {}
 cite_fields = ["URN","'URN-commentedOn'","Author","TranslatedBy","Text","Date","Translation","Notes","VettingStatus"]
 md =  new Markdown.Converter()
 
@@ -65,8 +66,8 @@ add_translation = (translation) ->
 add_translations = (urn) ->
   urn_selector = "li##{urn_to_id(urn)}"
   if cite_collection.rows?
-    matching_rows = cite_collection.rows.filter (row) -> row[cite_fields.indexOf("'URN-commentedOn'")] == urn
-    if matching_rows.length > 0
+    matching_rows = urn_mapping[urn]
+    if matching_rows? and matching_rows.length > 0
       $(urn_selector).addClass('has_translation')
       # $(urn_selector).prepend ' \u2713'
       $(urn_selector).append $('<br>')
@@ -135,8 +136,8 @@ show_translated = ->
 
 cite_collection_contains_urn = (urn) ->
   if cite_collection.rows?
-    matching_rows = cite_collection.rows.filter (row) -> row[cite_fields.indexOf("'URN-commentedOn'")] == urn
-    if matching_rows.length > 0
+    matching_rows = urn_mapping[urn]
+    if matching_rows? and matching_rows.length > 0
       return true
   return false
 
@@ -196,6 +197,11 @@ get_cite_collection = (callback) ->
   console.log('get_cite_collection')
   fusion_tables_query "SELECT #{cite_fields.join(', ')} FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
     cite_collection = fusion_tables_result
+    for row in cite_collection.rows
+      do (row) ->
+        urn = row[cite_fields.indexOf("'URN-commentedOn'")]
+        urn_mapping[urn] ?= []
+        urn_mapping[urn].push(row)
     callback() if callback?
   , ->
     $('#translation_container').append $('<div>').attr('class','alert alert-danger').text('Error in response from Google Fusion Tables for translation collection.')
