@@ -26,112 +26,167 @@ urn_to_head = (urn) ->
   urn.replace(/^.*:/,'').replace(/_/g,' ')
 
 # add UI for a single translation
-add_translation = (translation) ->
-  translation_div = $('<div>').attr('class','translation')
+# returns updated urn_li
+add_translation = (translation, urn_li) ->
+  translation_div = document.createElement('div')
+  translation_div.setAttribute('class','translation')
   edit_translation_link = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN': translation[0]
   )
-  edit_translation_a = $('<a>').attr('target','_blank').attr('href',edit_translation_link).text("Add a new version of translation #{translation[cite_fields.indexOf('URN')]}")
-  # <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
-  license_a = $('<a>',
-    rel: 'license'
-    href: 'http://creativecommons.org/licenses/by/4.0/')
-  license_a.append $('<img>',
-    alt: 'Creative Commons License'
-    style: 'border-width:0'
-    src: 'https://i.creativecommons.org/l/by/4.0/80x15.png')
-  translation_div.append $('<span>', {style: 'float:right'}).append(license_a)
-  translation_div.append $('<span>').attr('class','urn').append(edit_translation_a)
-  translation_div.append $('<span>').attr('class','author').text('Entered By: ' + translation[cite_fields.indexOf('Author')])
+  edit_translation_a = document.createElement('a')
+  edit_translation_a.setAttribute('target','_blank')
+  edit_translation_a.setAttribute('href',edit_translation_link)
+  edit_translation_a.textContent = "Add a new version of translation #{translation[cite_fields.indexOf('URN')]}"
+  
+  license_a = document.createElement('a')
+  license_a.setAttribute('rel','license')
+  license_a.setAttribute('href','http://creativecommons.org/licenses/by/4.0/')
+
+  license_img = document.createElement('img')
+  license_img.setAttribute('alt','Creative Commons License')
+  license_img.setAttribute('style','border-width:0')
+  license_img.setAttribute('src','https://i.creativecommons.org/l/by/4.0/80x15.png')
+  license_a.appendChild license_img
+
+  license_span = document.createElement('span')
+  license_span.setAttribute('style','float:right')
+  license_span.appendChild(license_a)
+  translation_div.appendChild(license_span)
+
+  edit_span = document.createElement('span')
+  edit_span.setAttribute('class','urn')
+  edit_span.appendChild(edit_translation_a)
+  translation_div.appendChild(edit_span)
+
+  entered_span = document.createElement('span')
+  entered_span.setAttribute('class','author')
+  entered_span.textContent = 'Entered By: ' + translation[cite_fields.indexOf('Author')]
+  translation_div.appendChild(entered_span)
+
   translated_by = translation[cite_fields.indexOf('TranslatedBy')]
   if translated_by?.length
-    translation_div.append $('<span>').attr('class','author').text('Translated By: ' + translated_by)
+    translated_by_span = document.createElement('span')
+    translated_by_span.setAttribute('class','author')
+    translated_by_span.textContent = 'Translated By: ' + translated_by
+    translation_div.appendChild(translated_by_span)
+
   vetting_status = translation[cite_fields.indexOf('VettingStatus')]
   vetting_status = if vetting_status?.length then vetting_status else 'Not Peer Reviewed'
-  translation_div.append $('<span>').attr('class','vettingStatus').text('Peer Review Status: ' + vetting_status)
-  translation_div.append $('<br>')
+  vetting_span = document.createElement('span')
+  vetting_span.setAttribute('class','vettingStatus')
+  vetting_span.textContent = 'Peer Review Status: ' + vetting_status
+  translation_div.appendChild(vetting_span)
+
+  translation_div.appendChild(document.createElement('br'))
   # translation_div.append $('<span>').attr('class','timestamp').text(translation[3])
-  canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])} .source_text p").text()
-  if translation[cite_fields.indexOf('Text')].trim() != canonical_text.trim()
-    # console.log("Canonical text: #{canonical_text}")
-    translation_div.append $('<span>').attr('class','entry_text').text(translation[cite_fields.indexOf('Text')])
-  translation_div.append $('<span>').attr('class','translation_text').html(md.makeHtml(translation[cite_fields.indexOf('Translation')]))
+  # TODO: port canonical_text change detection into pure JS DOM
+  # canonical_text = $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])} .source_text p").text()
+  # if translation[cite_fields.indexOf('Text')].trim() != canonical_text.trim()
+  #   console.log("Canonical text: #{canonical_text}")
+  #   translation_div.append $('<span>').attr('class','entry_text').text(translation[cite_fields.indexOf('Text')])
+  # translation_div.append $('<span>').attr('class','translation_text').html(md.makeHtml(translation[cite_fields.indexOf('Translation')]))
+  markdown_span = document.createElement('span')
+  markdown_span.setAttribute('class','translation_text')
+  markdown_span.innerHTML = md.makeHtml(translation[cite_fields.indexOf('Translation')])
+  translation_div.appendChild(markdown_span)
+
   if translation[cite_fields.indexOf('Notes')]?.length
-    translation_div.append $('<br>')
-    translation_div.append $('<span>').attr('class','note').html("Notes: #{md.makeHtml(translation[cite_fields.indexOf('Notes')])}")
-  $("li##{urn_to_id(translation[cite_fields.indexOf("'URN-commentedOn'")])}").append translation_div
+    translation_div.appendChild(document.createElement('br'))
+    note_span = document.createElement('span')
+    note_span.setAttribute('class','note')
+    note_span.innerHTML = "Notes: #{md.makeHtml(translation[cite_fields.indexOf('Notes')])}"
+    translation_div.appendChild(note_span)
+  urn_li.appendChild(translation_div)
+  return urn_li
 
 # add translations to UI for a given URN
 # cite_collection.rows row[1] contains URN-commentedOn
-add_translations = (urn) ->
-  urn_selector = "li##{urn_to_id(urn)}"
+add_translations = (urn, urn_li) ->
   if cite_collection.rows?
     matching_rows = urn_mapping[urn]
     if matching_rows? and matching_rows.length > 0
-      $(urn_selector).addClass('has_translation')
-      # $(urn_selector).prepend ' \u2713'
-      $(urn_selector).append $('<br>')
-      $(urn_selector).append $('<p>').text('Translations:')
+      urn_li.setAttribute('class', urn_li.getAttribute('class') + ' has_translation')
+      urn_li.appendChild document.createElement('br')
+      translations_p = document.createElement('p')
+      translations_p.textContent = 'Translations'
+      urn_li.appendChild translations_p
       for matching_row in matching_rows
         do (matching_row) ->
-          add_translation(matching_row)
+          urn_li = add_translation(matching_row, urn_li)
     else
-      $(urn_selector).addClass('no_translation')
+      urn_li.setAttribute('class', urn_li.getAttribute('class') + ' no_translation')
+  return urn_li
 
 # add UI for a single text URN, then add its translations afterward
-set_cts_text = (urn, head, tlg) ->
-  urn_selector = "li##{urn_to_id(urn)}"
-  $(urn_selector).text('')
+# returns urn_li
+set_cts_text = (urn, head, tlg, urn_li) ->
+  urn_li.textContent = ''
 
-  source_text = $('<div>').attr('class','source_text')
-  source_text.append $('<head>').text(head)
-  $(urn_selector).append(source_text)
-
+  source_text = document.createElement('div')
+  source_text.setAttribute('class','source_text')
+  source_text_head = document.createElement('head')
+  source_text_head.textContent = head
+  source_text.appendChild source_text_head
+  urn_li.appendChild source_text
+  
   urn_components = urn.split(':')
   reference = 'photios;' + urn_components[-2..].join(';')
   if headword_mapping[reference]
     image_href = "https://dcthree.github.io/photios-images/#nanogallery/photios/pages/#{headword_mapping[reference]}"
-    image_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',image_href).text("Page image"))
-    $(urn_selector).append(image_link)
+    image_link = document.createElement('p')
+    image_link_a = document.createElement('a')
+    image_link_a.setAttribute('target','_blank')
+    image_link_a.setAttribute('href',image_href)
+    image_link_a.textContent = "Page image"
+    image_link.appendChild image_link_a
+    urn_li.appendChild image_link
  
-  tlg_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',tlg).text("Open in TLG"))
-  $(urn_selector).append(tlg_link)
+  tlg_link = document.createElement('p')
+  tlg_link_a = document.createElement('a')
+  tlg_link_a.setAttribute('target','_blank')
+  tlg_link_a.setAttribute('href',tlg)
+  tlg_link_a.textContent = 'Open in TLG'
+  tlg_link.appendChild tlg_link_a
+  urn_li.append tlg_link
 
   editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
     'URN-commentedOn': urn
   )
-  editor_link = $('<p>').append($('<a>').attr('target','_blank').attr('href',editor_href).text("Add translation for #{urn}"))
-  $(urn_selector).append(editor_link)
+  editor_link = document.createElement('p')
+  editor_link_a = document.createElement('a')
+  editor_link_a.setAttribute('target','_blank')
+  editor_link_a.setAttribute('href',editor_href)
+  editor_link_a.textContent = "Add translation for #{urn}"
+  editor_link.appendChild editor_link_a
+  urn_li.appendChild editor_link
 
-  add_translations(urn)
+  add_translations(urn, urn_li)
 
 # sets passage from Fusion Tables result row
-set_passage = (passage) ->
+# returns urn_li
+set_passage = (passage, urn_li) ->
   urn = passage[0]
   head = passage[1]
   tlg = passage[2]
 
-  set_cts_text(urn, head, tlg)
+  set_cts_text(urn, head, tlg, urn_li)
 
 show_all = ->
   unless $('#all_entries_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#all_entries_button').addClass('active')
-    $('#valid_urns').remove()
     add_valid_urns()
 
 show_untranslated = ->
   unless $('#untranslated_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#untranslated_button').addClass('active')
-    $('#valid_urns').remove()
     add_valid_urns()
 
 show_translated = ->
   unless $('#translated_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#translated_button').addClass('active')
-    $('#valid_urns').remove()
     add_valid_urns()
 
 cite_collection_contains_urn = (urn) ->
@@ -141,27 +196,32 @@ cite_collection_contains_urn = (urn) ->
       return true
   return false
 
+# returns constructed urn_li
 add_urn_li = (urn) ->
-  urn_li = $('<li>').attr('id',urn_to_id(urn[0])).text(urn[0])
-  $('#valid_urns').append urn_li
+  urn_li = document.createElement('li')
+  urn_li.setAttribute('id',urn_to_id(urn[0]))
+  urn_li.textContent = urn[0]
 
-  set_passage(urn)
+  set_passage(urn, urn_li)
 
 add_valid_urns = ->
   console.log('add_valid_urns')
-  $('#translation_container').append $('<ul>').attr('id','valid_urns')
+  $('#valid_urns').remove()
+  valid_urns_ul = document.createElement('ul')
+  valid_urns_ul.setAttribute('id','valid_urns')
   translated_urns = 0
   for urn in valid_urns
     if $('#all_entries_button').hasClass('active')
-      add_urn_li(urn)
+      valid_urns_ul.appendChild(add_urn_li(urn))
     else if $('#untranslated_button').hasClass('active') && !cite_collection_contains_urn(urn[0])
-      add_urn_li(urn)
+      valid_urns_ul.appendChild(add_urn_li(urn))
     else if $('#translated_button').hasClass('active') && cite_collection_contains_urn(urn[0])
-      add_urn_li(urn)
+      valid_urns_ul.appendChild(add_urn_li(urn))
 
     if cite_collection_contains_urn(urn[0])
       translated_urns += 1
 
+  document.getElementById('translation_container').appendChild(valid_urns_ul)
   return translated_urns
 
 build_cts_ui = ->
@@ -169,7 +229,6 @@ build_cts_ui = ->
   $('#all_entries_button').click(show_all)
   $('#translated_button').click(show_translated)
   $('#untranslated_button').click(show_untranslated)
-  $('#translation_container').append $('<ul>').attr('id','valid_urns')
 
   translated_urns = add_valid_urns()
   progress = translated_urns/valid_urns.length * 100.0
