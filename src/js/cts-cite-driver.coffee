@@ -30,8 +30,9 @@ urn_to_head = (urn) ->
 add_translation = (translation, urn_li) ->
   translation_div = document.createElement('div')
   translation_div.setAttribute('class','translation')
+  translation_div.setAttribute('id', urn_to_id(translation[cite_fields.indexOf('URN')]))
   edit_translation_link = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
-    'URN': translation[0]
+    'URN': translation[cite_fields.indexOf('URN')]
   )
   edit_translation_a = document.createElement('a')
   edit_translation_a.setAttribute('target','_blank')
@@ -105,60 +106,71 @@ add_translations = (urn, urn_li) ->
   if cite_collection.rows?
     matching_rows = urn_mapping[urn]
     if matching_rows? and matching_rows.length > 0
-      urn_li.setAttribute('class', urn_li.getAttribute('class') + ' has_translation')
-      urn_li.appendChild document.createElement('br')
-      translations_p = document.createElement('p')
-      translations_p.textContent = 'Translations'
-      urn_li.appendChild translations_p
+      unless urn_li.getAttribute('class')? and (urn_li.getAttribute('class') == 'has_translation')
+        urn_li.setAttribute('class', 'has_translation')
+        urn_li.appendChild document.createElement('br')
+        translations_p = document.createElement('p')
+        translations_p.textContent = 'Translations'
+        urn_li.appendChild translations_p
       for matching_row in matching_rows
         do (matching_row) ->
-          urn_li = add_translation(matching_row, urn_li)
+          unless document.getElementById(urn_to_id(matching_row[cite_fields.indexOf('URN')]))?
+            urn_li = add_translation(matching_row, urn_li)
     else
-      urn_li.setAttribute('class', urn_li.getAttribute('class') + ' no_translation')
+      urn_li.setAttribute('class', 'no_translation')
+  return urn_li
+
+create_urn_li = (urn) ->
+  console.log("create_urn_li: #{urn}")
+  urn_li = document.createElement('li')
+  urn_li.setAttribute('id',urn_to_id(urn[cite_fields.indexOf('URN')]))
+  urn_li.textContent = urn[cite_fields.indexOf('URN')]
   return urn_li
 
 # add UI for a single text URN, then add its translations afterward
 # returns urn_li
 set_cts_text = (urn, head, tlg, urn_li) ->
-  urn_li.textContent = ''
+  unless urn_li?
+    urn_li = create_urn_li(urn)
+    urn_li.textContent = ''
 
-  source_text = document.createElement('div')
-  source_text.setAttribute('class','source_text')
-  source_text_head = document.createElement('head')
-  source_text_head.textContent = head
-  source_text.appendChild source_text_head
-  urn_li.appendChild source_text
-  
-  urn_components = urn.split(':')
-  reference = 'photios;' + urn_components[-2..].join(';')
-  if headword_mapping[reference]
-    image_href = "https://dcthree.github.io/photios-images/#nanogallery/photios/pages/#{headword_mapping[reference]}"
-    image_link = document.createElement('p')
-    image_link_a = document.createElement('a')
-    image_link_a.setAttribute('target','_blank')
-    image_link_a.setAttribute('href',image_href)
-    image_link_a.textContent = "Page image"
-    image_link.appendChild image_link_a
-    urn_li.appendChild image_link
- 
-  tlg_link = document.createElement('p')
-  tlg_link_a = document.createElement('a')
-  tlg_link_a.setAttribute('target','_blank')
-  tlg_link_a.setAttribute('href',tlg)
-  tlg_link_a.textContent = 'Open in TLG'
-  tlg_link.appendChild tlg_link_a
-  urn_li.append tlg_link
+    source_text = document.createElement('div')
+    source_text.setAttribute('class','source_text')
+    source_text_head = document.createElement('head')
+    source_text_head.textContent = head
+    source_text.appendChild source_text_head
+    urn_li.appendChild source_text
+    
+    urn_components = urn.split(':')
+    reference = 'photios;' + urn_components[-2..].join(';')
+    if headword_mapping[reference]
+      image_href = "https://dcthree.github.io/photios-images/#nanogallery/photios/pages/#{headword_mapping[reference]}"
+      image_link = document.createElement('p')
+      image_link_a = document.createElement('a')
+      image_link_a.setAttribute('target','_blank')
+      image_link_a.setAttribute('href',image_href)
+      image_link_a.textContent = "Page image"
+      image_link.appendChild image_link_a
+      urn_li.appendChild image_link
+   
+    tlg_link = document.createElement('p')
+    tlg_link_a = document.createElement('a')
+    tlg_link_a.setAttribute('target','_blank')
+    tlg_link_a.setAttribute('href',tlg)
+    tlg_link_a.textContent = 'Open in TLG'
+    tlg_link.appendChild tlg_link_a
+    urn_li.append tlg_link
 
-  editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
-    'URN-commentedOn': urn
-  )
-  editor_link = document.createElement('p')
-  editor_link_a = document.createElement('a')
-  editor_link_a.setAttribute('target','_blank')
-  editor_link_a.setAttribute('href',editor_href)
-  editor_link_a.textContent = "Add translation for #{urn}"
-  editor_link.appendChild editor_link_a
-  urn_li.appendChild editor_link
+    editor_href = cts_cite_collection_driver_config['cite_collection_editor_url'] + '#' + $.param(
+      'URN-commentedOn': urn
+    )
+    editor_link = document.createElement('p')
+    editor_link_a = document.createElement('a')
+    editor_link_a.setAttribute('target','_blank')
+    editor_link_a.setAttribute('href',editor_href)
+    editor_link_a.textContent = "Add translation for #{urn}"
+    editor_link.appendChild editor_link_a
+    urn_li.appendChild editor_link
 
   add_translations(urn, urn_li)
 
@@ -175,18 +187,21 @@ show_all = ->
   unless $('#all_entries_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#all_entries_button').addClass('active')
+    $('#valid_urns').remove()
     add_valid_urns()
 
 show_untranslated = ->
   unless $('#untranslated_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#untranslated_button').addClass('active')
+    $('#valid_urns').remove()
     add_valid_urns()
 
 show_translated = ->
   unless $('#translated_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#translated_button').addClass('active')
+    $('#valid_urns').remove()
     add_valid_urns()
 
 cite_collection_contains_urn = (urn) ->
@@ -197,31 +212,38 @@ cite_collection_contains_urn = (urn) ->
   return false
 
 # returns constructed urn_li
-add_urn_li = (urn) ->
-  urn_li = document.createElement('li')
-  urn_li.setAttribute('id',urn_to_id(urn[0]))
-  urn_li.textContent = urn[0]
-
+add_urn_li = (urn, urn_li) ->
   set_passage(urn, urn_li)
 
 add_valid_urns = ->
   console.log('add_valid_urns')
-  $('#valid_urns').remove()
-  valid_urns_ul = document.createElement('ul')
-  valid_urns_ul.setAttribute('id','valid_urns')
+  has_existing_urns = true
+  valid_urns_ul = document.getElementById('valid_urns')
+  unless valid_urns_ul?
+    valid_urns_ul = document.createElement('ul')
+    valid_urns_ul.setAttribute('id','valid_urns')
+    has_existing_urns = false
   translated_urns = 0
   for urn in valid_urns
+    urn_li = document.getElementById(urn_to_id(urn[cite_fields.indexOf('URN')]))
+    has_existing_urn_li = urn_li?
+    unless has_existing_urn_li
+      console.log "No existing urn_li for #{urn_to_id(urn[cite_fields.indexOf('URN')])}"
     if $('#all_entries_button').hasClass('active')
-      valid_urns_ul.appendChild(add_urn_li(urn))
+      urn_li = add_urn_li(urn,urn_li)
+      valid_urns_ul.appendChild(urn_li) unless has_existing_urn_li
     else if $('#untranslated_button').hasClass('active') && !cite_collection_contains_urn(urn[0])
-      valid_urns_ul.appendChild(add_urn_li(urn))
+      urn_li = add_urn_li(urn,urn_li)
+      valid_urns_ul.appendChild(urn_li) unless has_existing_urn_li
     else if $('#translated_button').hasClass('active') && cite_collection_contains_urn(urn[0])
-      valid_urns_ul.appendChild(add_urn_li(urn))
+      urn_li = add_urn_li(urn,urn_li)
+      valid_urns_ul.appendChild(urn_li) unless has_existing_urn_li
 
     if cite_collection_contains_urn(urn[0])
       translated_urns += 1
 
-  document.getElementById('translation_container').appendChild(valid_urns_ul)
+  unless has_existing_urns
+    document.getElementById('translation_container').appendChild(valid_urns_ul)
   return translated_urns
 
 build_cts_ui = ->
