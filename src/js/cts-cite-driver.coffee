@@ -215,6 +215,14 @@ cite_collection_contains_urn = (urn) ->
 add_urn_li = (urn, urn_li) ->
   set_passage(urn, urn_li)
 
+shift_window = ->
+  scrollBy(0, -60)
+
+scroll_to_entry = ->
+  if window.location.hash && !(parse_query_string()['editor']?) && document.getElementById('valid_urns')?
+    urn_id = decodeURIComponent(window.location.hash)
+    window.scrollTo(0,$(urn_id).position().top - 60)
+
 add_valid_urns = ->
   console.log('add_valid_urns')
   has_existing_urns = true
@@ -244,6 +252,7 @@ add_valid_urns = ->
 
   unless has_existing_urns
     document.getElementById('translation_container').appendChild(valid_urns_ul)
+    scroll_to_entry()
   return translated_urns
 
 build_cts_ui = ->
@@ -257,8 +266,7 @@ build_cts_ui = ->
   console.log("Progress: #{progress}")
   $('#translation_progress').attr('style',"width: #{progress}%;")
   $('#translation_progress').append $('<span>').text("#{translated_urns} / #{valid_urns.length} entries translated")
-  if window.location.hash && !(parse_query_string()['editor']?)
-    window.scrollTo(0,$(window.location.hash).position().top - 40)
+
 
 # get headword mapping JSON
 get_headword_mapping = (callback) ->
@@ -339,6 +347,9 @@ $(document).ready ->
   $('#loadingDiv').hide()
   $(document).ajaxStart -> $('#loadingDiv').show()
   $(document).ajaxStop -> $('#loadingDiv').hide()
+  window.addEventListener("hashchange", shift_window)
+  if (window.location.hash) && !(window.location.hash.startsWith('editor'))
+    shift_window()
   cts_cite_collection_driver_config = $.extend({}, default_cts_cite_collection_driver_config, window.cts_cite_collection_driver_config)
   if parse_query_string()['editor']?
     cts_cite_collection_driver_config['cite_collection_editor_url'] = cts_cite_collection_driver_config['cite_collection_editor_url_for_editors']
