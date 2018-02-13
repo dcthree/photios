@@ -121,7 +121,7 @@ add_translations = (urn, urn_li) ->
   return urn_li
 
 create_urn_li = (urn) ->
-  console.log("create_urn_li: #{urn}")
+  # console.log("create_urn_li: #{urn}")
   urn_li = document.createElement('li')
   urn_li.setAttribute('id',urn_to_id(urn[cite_fields.indexOf('URN')]))
   urn_li.textContent = urn[cite_fields.indexOf('URN')]
@@ -235,8 +235,6 @@ add_valid_urns = ->
   for urn in valid_urns
     urn_li = document.getElementById(urn_to_id(urn[cite_fields.indexOf('URN')]))
     has_existing_urn_li = urn_li?
-    unless has_existing_urn_li
-      console.log "No existing urn_li for #{urn_to_id(urn[cite_fields.indexOf('URN')])}"
     if $('#all_entries_button').hasClass('active')
       urn_li = add_urn_li(urn,urn_li)
       valid_urns_ul.appendChild(urn_li) unless has_existing_urn_li
