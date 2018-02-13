@@ -348,7 +348,7 @@ $(document).ready ->
   $(document).ajaxStart -> $('#loadingDiv').show()
   $(document).ajaxStop -> $('#loadingDiv').hide()
   window.addEventListener("hashchange", shift_window)
-  if (window.location.hash) && !(window.location.hash.startsWith('editor'))
+  if (window.location.hash) && !(window.location.hash.startsWith('editor')) && document.getElementById('valid_urns')?
     shift_window()
   cts_cite_collection_driver_config = $.extend({}, default_cts_cite_collection_driver_config, window.cts_cite_collection_driver_config)
   if parse_query_string()['editor']?
