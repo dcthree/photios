@@ -123,8 +123,8 @@ add_translations = (urn, urn_li) ->
 create_urn_li = (urn) ->
   # console.log("create_urn_li: #{urn}")
   urn_li = document.createElement('li')
-  urn_li.setAttribute('id',urn_to_id(urn[cite_fields.indexOf('URN')]))
-  urn_li.textContent = urn[cite_fields.indexOf('URN')]
+  urn_li.setAttribute('id',urn_to_id(urn))
+  urn_li.textContent = urn
   return urn_li
 
 # add UI for a single text URN, then add its translations afterward
@@ -183,26 +183,46 @@ set_passage = (passage, urn_li) ->
 
   set_cts_text(urn, head, tlg, urn_li)
 
+is_single_entry = ->
+  return (window.location.pathname.match(/([^\/]*)\/*$/)[1] == 'entry') && window.location.hash && !(parse_query_string()['editor']?)
+
 show_all = ->
   unless $('#all_entries_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#all_entries_button').addClass('active')
     $('#valid_urns').remove()
-    add_valid_urns()
+    if is_single_entry()
+      window.location.href = '{{ site.baseurl }}/' + window.location.hash
+    else
+      add_valid_urns()
 
 show_untranslated = ->
   unless $('#untranslated_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#untranslated_button').addClass('active')
     $('#valid_urns').remove()
-    add_valid_urns()
+    if is_single_entry()
+      console.log('navigating to untranslated entries from single entry')
+      window.history.pushState({},'Photios On Line', '{{ site.baseurl }}/' + window.location.hash)
+      $('#translation_progress').empty()
+      urn_mapping = {}
+      build_cts_cite_driver()
+    else
+      add_valid_urns()
 
 show_translated = ->
   unless $('#translated_button').hasClass('active')
     $('#toggle_group button').removeClass('active')
     $('#translated_button').addClass('active')
     $('#valid_urns').remove()
-    add_valid_urns()
+    if is_single_entry()
+      console.log('navigating to translated entries from single entry')
+      window.history.pushState({},'Photios On Line', '{{ site.baseurl }}/' + window.location.hash)
+      $('#translation_progress').empty()
+      urn_mapping = {}
+      build_cts_cite_driver()
+    else
+      add_valid_urns()
 
 cite_collection_contains_urn = (urn) ->
   if cite_collection.rows?
@@ -221,7 +241,9 @@ shift_window = ->
 scroll_to_entry = ->
   if window.location.hash && !(parse_query_string()['editor']?) && document.getElementById('valid_urns')?
     urn_id = decodeURIComponent(window.location.hash)
-    window.scrollTo(0,$(urn_id).position().top - 60)
+    console.log 'scrolling to', urn_id
+    if $(urn_id)? && $(urn_id).is(":visible")
+      window.scrollTo(0,$(urn_id).position().top - 60)
 
 add_valid_urns = ->
   console.log('add_valid_urns')
@@ -233,7 +255,7 @@ add_valid_urns = ->
     has_existing_urns = false
   translated_urns = 0
   for urn in valid_urns
-    urn_li = document.getElementById(urn_to_id(urn[cite_fields.indexOf('URN')]))
+    urn_li = document.getElementById(urn_to_id(urn[0]))
     has_existing_urn_li = urn_li?
     if $('#all_entries_button').hasClass('active')
       urn_li = add_urn_li(urn,urn_li)
@@ -253,23 +275,23 @@ add_valid_urns = ->
     scroll_to_entry()
   return translated_urns
 
-build_cts_ui = ->
+build_cts_ui = (callback = null) ->
   console.log('build_cts_ui')
-  $('#all_entries_button').click(show_all)
-  $('#translated_button').click(show_translated)
-  $('#untranslated_button').click(show_untranslated)
+  $('#all_entries_button').off('click').click(show_all)
+  $('#translated_button').off('click').click(show_translated)
+  $('#untranslated_button').off('click').click(show_untranslated)
 
   translated_urns = add_valid_urns()
   progress = translated_urns/valid_urns.length * 100.0
   console.log("Progress: #{progress}")
   $('#translation_progress').attr('style',"width: #{progress}%;")
   $('#translation_progress').append $('<span>').text("#{translated_urns} / #{valid_urns.length} entries translated")
-
+  callback() if callback?
 
 # get headword mapping JSON
 get_headword_mapping = (callback) ->
   console.log('get_headword_mapping')
-  $.ajax 'data/headword_mapping.json',
+  $.ajax '{{ site.baseurl }}/data/headword_mapping.json',
     type: 'GET'
     dataType: 'json'
     error: (jqXHR, textStatus, errorThrown) ->
@@ -282,7 +304,8 @@ get_headword_mapping = (callback) ->
 # get all data from fusion table
 get_cite_collection = (callback) ->
   console.log('get_cite_collection')
-  fusion_tables_query "SELECT #{cite_fields.join(', ')} FROM #{cts_cite_collection_driver_config['cite_table_id']}", (fusion_tables_result) ->
+  cite_collection_query = "SELECT #{cite_fields.join(', ')} FROM #{cts_cite_collection_driver_config['cite_table_id']}"
+  fusion_tables_query cite_collection_query, (fusion_tables_result) ->
     cite_collection = fusion_tables_result
     for row in cite_collection.rows
       do (row) ->
@@ -294,9 +317,9 @@ get_cite_collection = (callback) ->
     $('#translation_container').append $('<div>').attr('class','alert alert-danger').text('Error in response from Google Fusion Tables for translation collection.')
 
 # construct a list of valid URN's and pass to callback function
-get_valid_reff = (urn, callback = null) ->
+get_valid_reff = (urn, urn_comparison = 'STARTS WITH', callback = null) ->
   console.log('get_valid_reff')
-  fusion_tables_query "SELECT URN,Headword,TLG FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN STARTS WITH '#{urn}'", (fusion_tables_result) ->
+  fusion_tables_query "SELECT URN,Headword,TLG FROM #{cts_cite_collection_driver_config['cts_endpoint']} WHERE URN #{urn_comparison} '#{urn}'", (fusion_tables_result) ->
     valid_urns = fusion_tables_result.rows
     # console.log(valid_urns)
     callback() if callback?
@@ -337,7 +360,13 @@ parse_query_string = (query_string) ->
 build_cts_cite_driver = ->
   console.log('build')
   # fetch CTS, fetch CITE, build UI
-  get_valid_reff(cts_cite_collection_driver_config['cts_urn'], -> get_cite_collection( -> get_headword_mapping(build_cts_ui)))
+  base_urn = cts_cite_collection_driver_config['cts_urn']
+  if is_single_entry()
+    base_urn = base_urn + ':' + decodeURIComponent(window.location.hash).replace(/^#/,'').split('_').slice(-2).join(':')
+    console.log "Rendering single entry:", base_urn
+    get_valid_reff(base_urn, '=', -> get_cite_collection( -> get_headword_mapping( -> build_cts_ui( -> $('#toggle_group button').removeClass('active')))))
+  else
+    get_valid_reff(base_urn, 'STARTS WITH', -> get_cite_collection( -> get_headword_mapping(build_cts_ui)))
 
 # main driver entry point
 $(document).ready ->
