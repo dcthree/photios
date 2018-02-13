@@ -1,6 +1,7 @@
 kramdown:
   input: GFM
   hard_wrap: false
+baseurl: /photios
 plugins:
   - jekyll-coffeescript
   - jekyll-paginate
