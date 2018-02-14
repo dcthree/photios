@@ -302,9 +302,9 @@ get_headword_mapping = (callback) ->
       callback() if callback?
 
 # get all data from fusion table
-get_cite_collection = (callback) ->
+get_cite_collection = (additional_criteria, callback) ->
   console.log('get_cite_collection')
-  cite_collection_query = "SELECT #{cite_fields.join(', ')} FROM #{cts_cite_collection_driver_config['cite_table_id']}"
+  cite_collection_query = "SELECT #{cite_fields.join(', ')} FROM #{cts_cite_collection_driver_config['cite_table_id']} #{additional_criteria}"
   fusion_tables_query cite_collection_query, (fusion_tables_result) ->
     cite_collection = fusion_tables_result
     for row in cite_collection.rows
@@ -364,9 +364,9 @@ build_cts_cite_driver = ->
   if is_single_entry()
     base_urn = base_urn + ':' + decodeURIComponent(window.location.hash).replace(/^#/,'').split('_').slice(-2).join(':')
     console.log "Rendering single entry:", base_urn
-    get_valid_reff(base_urn, '=', -> get_cite_collection( -> get_headword_mapping( -> build_cts_ui( -> $('#toggle_group button').removeClass('active')))))
+    get_valid_reff(base_urn, '=', -> get_cite_collection("WHERE 'URN-commentedOn' = '#{base_urn}'", -> get_headword_mapping( -> build_cts_ui( -> $('#toggle_group button').removeClass('active')))))
   else
-    get_valid_reff(base_urn, 'STARTS WITH', -> get_cite_collection( -> get_headword_mapping(build_cts_ui)))
+    get_valid_reff(base_urn, 'STARTS WITH', -> get_cite_collection('', -> get_headword_mapping(build_cts_ui)))
 
 # main driver entry point
 $(document).ready ->
