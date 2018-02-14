@@ -312,11 +312,12 @@ get_cite_collection = (additional_criteria, callback) ->
   cite_collection_query = "SELECT #{cite_fields.join(', ')} FROM #{cts_cite_collection_driver_config['cite_table_id']} #{additional_criteria}"
   fusion_tables_query cite_collection_query, (fusion_tables_result) ->
     cite_collection = fusion_tables_result
-    for row in cite_collection.rows
-      do (row) ->
-        urn = row[cite_fields.indexOf("'URN-commentedOn'")]
-        urn_mapping[urn] ?= []
-        urn_mapping[urn].push(row)
+    if cite_collection.rows?
+      for row in cite_collection.rows
+        do (row) ->
+          urn = row[cite_fields.indexOf("'URN-commentedOn'")]
+          urn_mapping[urn] ?= []
+          urn_mapping[urn].push(row)
     callback() if callback?
   , ->
     $('#translation_container').append $('<div>').attr('class','alert alert-danger').text('Error in response from Google Fusion Tables for translation collection.')
