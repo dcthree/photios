@@ -136,10 +136,15 @@ set_cts_text = (urn, head, tlg, urn_li) ->
 
     source_text = document.createElement('div')
     source_text.setAttribute('class','source_text')
-    source_text_head = document.createElement('head')
-    source_text_head.textContent = head
+    source_text_head = document.createElement('strong')
+    source_text_head_a = document.createElement('a')
+    source_text_head_a.setAttribute('href',"https://dcthree.github.io/photios/entry##{urn_to_id(urn)}")
+    source_text_head_a.setAttribute('target','_blank')
+    source_text_head_a.textContent = head
+    source_text_head.appendChild source_text_head_a
     source_text.appendChild source_text_head
     urn_li.appendChild source_text
+    urn_li.appendChild document.createElement('br')
     
     urn_components = urn.split(':')
     reference = 'photios;' + urn_components[-2..].join(';')
