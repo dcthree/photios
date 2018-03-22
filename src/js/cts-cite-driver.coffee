@@ -138,7 +138,7 @@ set_cts_text = (urn, head, tlg, urn_li) ->
     source_text.setAttribute('class','source_text')
     source_text_head = document.createElement('strong')
     source_text_head_a = document.createElement('a')
-    source_text_head_a.setAttribute('href',"https://dcthree.github.io/photios/entry##{urn_to_id(urn)}")
+    source_text_head_a.setAttribute('href',"https://dcthree.github.io/photios/entry##{encodeURIComponent(urn_to_id(urn))}")
     source_text_head_a.setAttribute('target','_blank')
     source_text_head_a.textContent = head
     source_text_head.appendChild source_text_head_a
