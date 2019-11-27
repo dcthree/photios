@@ -36,9 +36,10 @@ add_translation = (translation, urn_li) ->
   )
   edit_translation_a = document.createElement('a')
   edit_translation_a.setAttribute('target','_blank')
-  edit_translation_a.setAttribute('href',edit_translation_link)
+  edit_translation_a.setAttribute('class','disabled')
+  # edit_translation_a.setAttribute('href',edit_translation_link)
   edit_translation_a.textContent = "Add a new version of translation #{translation[cite_fields.indexOf('URN')]}"
-  
+
   license_a = document.createElement('a')
   license_a.setAttribute('rel','license')
   license_a.setAttribute('href','http://creativecommons.org/licenses/by/4.0/')
@@ -145,7 +146,7 @@ set_cts_text = (urn, head, tlg, urn_li) ->
     source_text.appendChild source_text_head
     urn_li.appendChild source_text
     urn_li.appendChild document.createElement('br')
-    
+
     urn_components = urn.split(':')
     reference = 'photios;' + urn_components[-2..].join(';')
     if headword_mapping[reference]
@@ -157,7 +158,7 @@ set_cts_text = (urn, head, tlg, urn_li) ->
       image_link_a.textContent = "Page image"
       image_link.appendChild image_link_a
       urn_li.appendChild image_link
-   
+
     tlg_link = document.createElement('p')
     tlg_link_a = document.createElement('a')
     tlg_link_a.setAttribute('target','_blank')
@@ -172,7 +173,8 @@ set_cts_text = (urn, head, tlg, urn_li) ->
     editor_link = document.createElement('p')
     editor_link_a = document.createElement('a')
     editor_link_a.setAttribute('target','_blank')
-    editor_link_a.setAttribute('href',editor_href)
+    editor_link_a.setAttribute('class','disabled')
+    # editor_link_a.setAttribute('href',editor_href)
     editor_link_a.textContent = "Add translation for #{urn}"
     editor_link.appendChild editor_link_a
     urn_li.appendChild editor_link
