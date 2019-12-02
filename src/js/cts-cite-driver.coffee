@@ -389,4 +389,4 @@ $(document).ready ->
   if parse_query_string()['editor']?
     cts_cite_collection_driver_config['cite_collection_editor_url'] = cts_cite_collection_driver_config['cite_collection_editor_url_for_editors']
   console.log(cts_cite_collection_driver_config['cite_collection_editor_url'])
-  build_cts_cite_driver()
+  # build_cts_cite_driver()
