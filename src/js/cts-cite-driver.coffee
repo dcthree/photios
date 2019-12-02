@@ -282,6 +282,12 @@ add_valid_urns = ->
     scroll_to_entry()
   return translated_urns
 
+set_progress = (translated_urns, total_urns) ->
+  progress = translated_urns/total_urns * 100.0
+  console.log("Progress: #{progress}")
+  $('#translation_progress').attr('style',"width: #{progress}%;")
+  $('#translation_progress').append $('<span>').text("#{translated_urns} / #{total_urns} entries translated")
+
 build_cts_ui = (callback = null) ->
   console.log('build_cts_ui')
   $('#all_entries_button').off('click').click(show_all)
@@ -289,10 +295,7 @@ build_cts_ui = (callback = null) ->
   $('#untranslated_button').off('click').click(show_untranslated)
 
   translated_urns = add_valid_urns()
-  progress = translated_urns/valid_urns.length * 100.0
-  console.log("Progress: #{progress}")
-  $('#translation_progress').attr('style',"width: #{progress}%;")
-  $('#translation_progress').append $('<span>').text("#{translated_urns} / #{valid_urns.length} entries translated")
+  set_progress(translated_urns, valid_urns.length)
   callback() if callback?
 
 # get headword mapping JSON
@@ -389,4 +392,5 @@ $(document).ready ->
   if parse_query_string()['editor']?
     cts_cite_collection_driver_config['cite_collection_editor_url'] = cts_cite_collection_driver_config['cite_collection_editor_url_for_editors']
   console.log(cts_cite_collection_driver_config['cite_collection_editor_url'])
+  set_progress(4011, 16296)
   # build_cts_cite_driver()
